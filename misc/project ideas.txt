@@ -1,0 +1,6 @@
+Jail needs to reach certain capacity for player to win
+	- Small chance of a breakout releasing some or all criminals
+
+Criminals start off in buildings and come out randomly
+	- They can hide in buildings for a short time
+
