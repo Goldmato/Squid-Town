@@ -23,8 +23,11 @@ public class Enemy : MonoBehaviour
     protected NavMeshAgent m_Agent;
     protected Collider m_Collider;
 
+    private float m_DisableDelay;
     private int m_OldDoorIndex = int.MaxValue;
     private int m_DoorIgnoreIndex;
+
+    const float DISABLE_INTERVAL = 1.5f;
 
     void Awake()
     {
@@ -41,23 +44,25 @@ public class Enemy : MonoBehaviour
 
     void OnTriggerEnter(Collider other)
     {
-        if(other.CompareTag("Door"))
+        if(Time.timeSinceLevelLoad > m_DisableDelay && other.CompareTag("Door"))
         {
             Debug.Log("Enemy entered doorway!");
+            m_DisableDelay = Time.timeSinceLevelLoad + DISABLE_INTERVAL;
             StartCoroutine(DisableEnemy());
         }
     }
 
     protected virtual IEnumerator DisableEnemy()
     {
-        m_Collider.enabled = false;
+        m_Agent.isStopped = true;
+        m_Agent.Warp(m_Agent.destination);
         for(int i = 0; i < m_Renderer.Length; i++) { m_Renderer[i].enabled = false; }
 
         var hideDelay = Random.Range(m_HideDelayLow, m_HideDelayHigh);
         yield return new WaitForSeconds(hideDelay);
 
-        m_Collider.enabled = true;
         for(int i = 0; i < m_Renderer.Length; i++) { m_Renderer[i].enabled = true; }
+        m_Agent.isStopped = false;
         GoToNearestDoor();
     }
 
