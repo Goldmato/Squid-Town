@@ -3,7 +3,4 @@ using System.Collections.Generic;
 
 using UnityEngine;
 
-public class CommonTypes : MonoBehaviour 
-{
-	
-}
+public enum SpawnMethod : byte { Random, InHouses, InJail }
