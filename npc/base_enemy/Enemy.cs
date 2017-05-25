@@ -18,13 +18,15 @@ public class Enemy : MonoBehaviour
     [SerializeField] [Range(0, 10f)] protected float m_HideDelayLow = 1f;
     [SerializeField] [Range(0, 10f)] protected float m_HideDelayHigh = 5f;
 
-    protected int[] m_DoorsToIgnore = { -1, -1 };
+    protected MoveBehaviour MoveMode;
+
     protected Renderer[] m_Renderer;
     protected NavMeshAgent m_Agent;
     protected Collider m_Collider;
 
+    protected int[] m_DoorsToIgnore = { -1, -1 };
+
     private float m_DisableDelay;
-    private int m_OldDoorIndex = int.MaxValue;
     private int m_DoorIgnoreIndex;
 
     const float DISABLE_INTERVAL = 1.5f;
@@ -34,19 +36,32 @@ public class Enemy : MonoBehaviour
         m_Agent = GetComponent<NavMeshAgent>();
         m_Collider = GetComponent<Collider>();
         m_Renderer = GetComponentsInChildren<Renderer>();
+        m_Agent.speed = Random.Range(m_SpeedLow, m_SpeedHigh);
     }
 
-    void Start()
+    /*protected virtual void Start()
     {
-        m_Agent.speed = Random.Range(m_SpeedLow, m_SpeedHigh) * 2.5f;
-        GoToNearestDoor();
+        Move();
+    }*/
+
+#if UNITY_EDITOR
+    void Update()
+    {
+        // DEBUGGING/TESTING
+        if(Input.GetKeyDown(KeyCode.Tab))
+        {
+            Move();
+        }
     }
+#endif
 
     void OnTriggerEnter(Collider other)
     {
         if(Time.timeSinceLevelLoad > m_DisableDelay && other.CompareTag("Door"))
         {
             Debug.Log("Enemy entered doorway!");
+
+            // Cooldown delay for door trigger events
             m_DisableDelay = Time.timeSinceLevelLoad + DISABLE_INTERVAL;
             StartCoroutine(DisableEnemy());
         }
@@ -63,47 +78,14 @@ public class Enemy : MonoBehaviour
 
         for(int i = 0; i < m_Renderer.Length; i++) { m_Renderer[i].enabled = true; }
         m_Agent.isStopped = false;
-        GoToNearestDoor();
+        Move();
     }
 
-    protected virtual void GoToNearestDoor()
+    public void Move()
     {
-        var doors = Registry.Current.Doors;
+        if(MoveMode == null)
+            MoveMode = new DoorMagnet();
 
-        float minDist = float.MaxValue;
-        int selectedDoor = -1;
-
-        for(int i = 0; i < doors.Count; i++)
-        {
-            if(IsDoorIgnored(i))
-                continue;
-
-            float dist = Vector3.Distance(transform.position, doors[i].transform.position);
-
-            if(dist < minDist)
-            {
-                selectedDoor = i;
-                minDist = dist;
-            }
-        }
-
-        m_DoorsToIgnore[m_DoorIgnoreIndex++] = selectedDoor;
-        if(m_DoorIgnoreIndex == m_DoorsToIgnore.Length)
-            m_DoorIgnoreIndex = 0;
-
-        if(selectedDoor >= 0)
-            m_Agent.destination = doors[selectedDoor].transform.position;
-        else
-            throw new UnityException("ERROR No door selected");
-    }
-
-    bool IsDoorIgnored(int index)
-    {
-        for (int i = 0; i < m_DoorsToIgnore.Length; i++)
-        {
-            if(m_DoorsToIgnore[i] == index)
-                return true;
-        }
-        return false;
+        MoveMode.Move(m_Agent, transform.position);
     }
 }
