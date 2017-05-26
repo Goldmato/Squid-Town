@@ -24,8 +24,6 @@ public class Enemy : MonoBehaviour
     protected NavMeshAgent m_Agent;
     protected Collider m_Collider;
 
-    protected int[] m_DoorsToIgnore = { -1, -1 };
-
     private float m_DisableDelay;
     private int m_DoorIgnoreIndex;
 
@@ -37,12 +35,9 @@ public class Enemy : MonoBehaviour
         m_Collider = GetComponent<Collider>();
         m_Renderer = GetComponentsInChildren<Renderer>();
         m_Agent.speed = Random.Range(m_SpeedLow, m_SpeedHigh);
-    }
 
-    /*protected virtual void Start()
-    {
-        Move();
-    }*/
+        EnemyController.Current.Register(this);
+    }
 
 #if UNITY_EDITOR
     void Update()
@@ -67,7 +62,7 @@ public class Enemy : MonoBehaviour
         }
     }
 
-    protected virtual IEnumerator DisableEnemy()
+    protected IEnumerator DisableEnemy(bool moveAfter = true)
     {
         m_Agent.isStopped = true;
         m_Agent.Warp(m_Agent.destination);
@@ -77,15 +72,18 @@ public class Enemy : MonoBehaviour
         yield return new WaitForSeconds(hideDelay);
 
         for(int i = 0; i < m_Renderer.Length; i++) { m_Renderer[i].enabled = true; }
-        m_Agent.isStopped = false;
-        Move();
+
+        if(moveAfter)
+            Move();
     }
 
     public void Move()
     {
         if(MoveMode == null)
-            MoveMode = new DoorMagnet();
+            MoveMode = new SeekDoors();
 
-        MoveMode.Move(m_Agent, transform.position);
+        m_Agent.isStopped = false;
+
+        MoveMode.MoveNext(m_Agent, transform.position);
     }
 }
