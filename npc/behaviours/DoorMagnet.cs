@@ -7,15 +7,15 @@ using UnityEngine.AI;
 
 ///<summary>
 /// Enemy movement behaviour that targets the nearest
-/// ddor while ignoring the previous 2 doors visited
+/// door while ignoring the previous 2 doors visited
 /// while using this behaviour
 ///</summary>
-public class DoorMagnet : MoveBehaviour
+public class SeekDoors : MoveBehaviour
 {
     private int[] m_DoorsToIgnore = { -1, -1 };
     private int m_DoorIgnoreIndex;
 
-    public void Move(NavMeshAgent agent, Vector3 currentPos)
+    public void MoveNext(NavMeshAgent agent, Vector3 currentPos)
     {
         var doors = Registry.Current.Doors;
 
@@ -43,7 +43,7 @@ public class DoorMagnet : MoveBehaviour
         if(selectedDoor >= 0)
             agent.destination = doors[selectedDoor].transform.position;
         else
-            throw new UnityException("ERROR No door selected");
+            throw new UnityException("ERROR No door selected (Enemy::Move())");
     }
 
     bool IsDoorIgnored(int index)

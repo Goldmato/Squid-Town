@@ -6,5 +6,5 @@ using UnityEngine.AI;
 
 public interface MoveBehaviour
 {
-    void Move(NavMeshAgent agent, Vector3 currentPos);
+    void MoveNext(NavMeshAgent agent, Vector3 currentPos);
 }

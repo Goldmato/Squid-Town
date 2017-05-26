@@ -12,7 +12,6 @@ public class Registry : MonoBehaviour
     public static Registry Current { get { return m_Instance; } } 
 
     public List<Door> Doors = new List<Door>();
-    public List<Enemy> Enemies = new List<Enemy>();
 
     private static Registry m_Instance;
     private static bool m_ExceptionFlag;
