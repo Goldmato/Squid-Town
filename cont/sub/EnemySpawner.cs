@@ -4,7 +4,11 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
-public class EnemyManager : MonoBehaviour
+///<summary>
+/// Component that controls all enemy spawning behaviour
+/// NOTE: Not a singleton
+///</summary>
+public class EnemySpawner : MonoBehaviour
 {
     // TODO: Implement features shown in https://www.draw.io/#DEnemyManager
 
@@ -18,32 +22,33 @@ public class EnemyManager : MonoBehaviour
         m_Container = new GameObject("Enemies");
 
         // DEBUGGING/TESTING
-        SpawnEnemies(10, SpawnMethod.Random);
+        SpawnEnemies(SpawnMethod.InHouses);
     }
 
-    public void SpawnEnemies(int numEnemies, SpawnMethod method)
+    public void SpawnEnemies(SpawnMethod method, int numEnemies = 10)
 	{
 		switch (method)
 		{
 			case SpawnMethod.Random:
-                Debug.Log("Spawning [" + numEnemies + "] enemies randomly");
                 SpawnEnemiesRandom(numEnemies);
                 break;
             case SpawnMethod.InHouses:
-				Debug.Log("Spawning [" + numEnemies + "] enemies in houses");
-				SpawnEnemiesInHouses(numEnemies);
+				SpawnEnemiesInHouses();
                 break;
             case SpawnMethod.InJail:
-				Debug.Log("Spawning [" + numEnemies + "] enemies in jail");
 				SpawnEnemiesInJail(numEnemies);
                 break;
             default:
                 throw new UnityException("ERROR Invalid spawn method requested (EnemyManager)");
         }
+
+        EnemyController.Current.MoveAllEnemies();
 	}
 
 	void SpawnEnemiesRandom(int numEnemies)
 	{
+        Debug.Log("Spawning [" + numEnemies + "] enemies randomly");
+
         float terrainRadius = (m_Terrain.terrainData.size.x + m_Terrain.terrainData.size.z) / 2;
 
         for (int i = 0; i < numEnemies; i++)
@@ -58,17 +63,27 @@ public class EnemyManager : MonoBehaviour
             newEnemy.transform.SetParent(m_Container.transform);
 
             // Debug.Log("Moving enemy [" + i + "] to nearest door...");
+        }
+    }
+
+	void SpawnEnemiesInHouses()
+	{
+        Debug.Log("Spawning [" + Registry.Current.Doors.Count + "] enemies in houses");
+        
+        for (int i = 0; i < Registry.Current.Doors.Count; i++)
+        {
+            var newEnemy = Instantiate(m_SpawnableEnemies[Random.Range(0, m_SpawnableEnemies.Count)],
+				 Registry.Current.Doors[i].transform.position, Quaternion.identity) as Enemy;
+            newEnemy.transform.SetParent(m_Container.transform);
+
             newEnemy.Move();
         }
 	}
 
-	void SpawnEnemiesInHouses(int numEnemies)
-	{
-		throw new System.NotImplementedException();
-	}
-
 	void SpawnEnemiesInJail(int numEnemies)
 	{
+        Debug.Log("Spawning [" + numEnemies + "] enemies in jail");
+        
         throw new System.NotImplementedException();
     }
 }
