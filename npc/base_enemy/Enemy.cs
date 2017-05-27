@@ -36,19 +36,8 @@ public class Enemy : MonoBehaviour
         m_Renderer = GetComponentsInChildren<Renderer>();
         m_Agent.speed = Random.Range(m_SpeedLow, m_SpeedHigh);
 
-        EnemyController.Current.Register(this);
+        GameController.Current.EC.Register(this);
     }
-
-#if UNITY_EDITOR
-    void Update()
-    {
-        // DEBUGGING/TESTING
-        if(Input.GetKeyDown(KeyCode.Tab))
-        {
-            Move();
-        }
-    }
-#endif
 
     void OnTriggerEnter(Collider other)
     {
