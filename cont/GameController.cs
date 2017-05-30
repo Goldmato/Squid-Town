@@ -8,6 +8,7 @@ using UnityEngine;
 ///</summary>
 [RequireComponent(typeof(EnemyController))]
 [RequireComponent(typeof(EnemySpawner))]
+[RequireComponent(typeof(TextController))]
 public class GameController : MonoBehaviour
 {
     public static GameController Current { get { return m_Instance; } }
@@ -16,6 +17,21 @@ public class GameController : MonoBehaviour
     public EnemySpawner ES { get { return m_EnemySpawner; } }
     public GameObject Jail { get { return m_MainJail; } }
 
+    public int Score 
+    { 
+        get { return m_Score; } 
+        set 
+        {
+            m_Score = value; 
+            m_TextController.UpdateScore(value); 
+            if(m_Score >= m_EnemyController.EnemyCount &&
+                m_Score > 0)
+            {
+                GameWon();
+            }
+        } 
+    }
+
     [SerializeField] private GameObject m_MainJail;
 
     private static GameController m_Instance;
@@ -23,6 +39,9 @@ public class GameController : MonoBehaviour
 
     private EnemyController m_EnemyController;
     private EnemySpawner m_EnemySpawner;
+    private TextController m_TextController;
+
+    private int m_Score;
 
     void Awake()
     {
@@ -45,10 +64,14 @@ public class GameController : MonoBehaviour
 
         m_EnemyController = GetComponent<EnemyController>();
         m_EnemySpawner = GetComponent<EnemySpawner>();
+        m_TextController = GetComponent<TextController>();
     }
 
     void Start()
     {
+        // Set intial score to 0;
+        Score = 0;
+
         StartCoroutine(SpawnFirstWaveTest());
     }
 
@@ -58,5 +81,12 @@ public class GameController : MonoBehaviour
         m_EnemySpawner.SpawnEnemies(SpawnMethod.InJail);
         yield return new WaitForSeconds(2.0f);
         StartCoroutine(m_EnemyController.UpdateEnemies());
+    }
+
+    void GameWon()
+    {
+        // TODO: Load game winning scene
+
+        Debug.LogWarning("All enemies captured! You win!");
     }
 }
