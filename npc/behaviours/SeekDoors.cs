@@ -18,6 +18,7 @@ public class SeekDoors : MoveBehaviour
     public void MoveNext(NavMeshAgent agent, Vector3 currentPos)
     {
         var doors = Registry.Current.Doors;
+        doors[m_DoorsToIgnore[m_DoorIgnoreIndex]].Leave();
 
         float minDist = float.MaxValue;
         int selectedDoor = -1;
@@ -40,7 +41,7 @@ public class SeekDoors : MoveBehaviour
         if(m_DoorIgnoreIndex == m_DoorsToIgnore.Length)
             m_DoorIgnoreIndex = 0;
 
-        if(selectedDoor >= 0)
+        if(selectedDoor >= 0 && doors[selectedDoor].Occupy())
             agent.destination = doors[selectedDoor].transform.position;
         else
             throw new UnityException("ERROR No door selected (Enemy::Move())");
@@ -48,7 +49,7 @@ public class SeekDoors : MoveBehaviour
 
     bool IsDoorIgnored(int index)
     {
-        for (int i = 0; i < m_DoorsToIgnore.Length; i++)
+        for(int i = 0; i < m_DoorsToIgnore.Length; i++)
         {
             if(m_DoorsToIgnore[i] == index)
                 return true;
