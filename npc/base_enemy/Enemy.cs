@@ -25,9 +25,10 @@ public class Enemy : MonoBehaviour
     protected Collider m_Collider;
 
     private float m_DisableDelay;
+    private bool m_EnemyDisabled;
     private int m_DoorIgnoreIndex;
 
-    const float DISABLE_INTERVAL = 1.5f;
+    const float DISABLE_INTERVAL = 5f;
 
     void Awake()
     {
@@ -51,10 +52,10 @@ public class Enemy : MonoBehaviour
         }
     }
 
-    protected IEnumerator DisableEnemy(bool moveAfter = true)
+    protected IEnumerator DisableEnemy()
     {
+        m_EnemyDisabled = true;
         m_Agent.isStopped = true;
-        m_Agent.Warp(m_Agent.destination);
         for(int i = 0; i < m_Renderer.Length; i++) { m_Renderer[i].enabled = false; }
 
         var hideDelay = Random.Range(m_HideDelayLow, m_HideDelayHigh);
@@ -62,14 +63,16 @@ public class Enemy : MonoBehaviour
 
         for(int i = 0; i < m_Renderer.Length; i++) { m_Renderer[i].enabled = true; }
 
-        if(moveAfter)
-            Move();
+        m_EnemyDisabled = false;
+        m_Agent.isStopped = false;
     }
 
     public void Move()
     {
+        if(m_EnemyDisabled)
+            return;
         if(MoveMode == null)
-            MoveMode = new SeekDoors();
+            MoveMode = new RandomMovement();
 
         m_Agent.isStopped = false;
 
