@@ -16,10 +16,12 @@ public class EnemySpawner : MonoBehaviour
     [SerializeField] private List<Enemy> m_SpawnableEnemies;
 
     private GameObject m_Container;
+    private InJail m_InJail;
 
     void Start()
     {
         m_Container = new GameObject("Enemies");
+        m_InJail = GameObject.FindGameObjectWithTag("InJail").GetComponent<InJail>();
     }
 
     public void SpawnEnemies(SpawnMethod method, int numEnemies = 10)
@@ -77,21 +79,13 @@ public class EnemySpawner : MonoBehaviour
     {
         Debug.Log("Spawning [" + numEnemies + "] enemies in jail");
 
-        Transform jailTrans = GameController.Current.Jail.transform;
-        Collider barCol = jailTrans.Find("bars").GetComponent<Collider>();
-
         for (int i = 0; i < numEnemies; i++)
         {
             //TODO: Spawn enemies in a circular area within the main jail
-
-            float barRadius = (barCol.bounds.extents.x + barCol.bounds.extents.z) / 2;
-            Vector2 circlePos = Random.insideUnitCircle * barRadius;
-            Vector3 randomPos = new Vector3(circlePos.x, 0, circlePos.y) + barCol.transform.position;
-            NavMeshHit hit;
-            NavMesh.SamplePosition(randomPos, out hit, barRadius, NavMesh.AllAreas);
+            Vector3 randomPos = m_InJail.RandomLocation();
 
             var newEnemy = Instantiate(m_SpawnableEnemies[Random.Range(0, m_SpawnableEnemies.Count)],
-                 hit.position, Quaternion.identity) as Enemy;
+                 randomPos, Quaternion.identity) as Enemy;
         }
     }
 }
