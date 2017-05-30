@@ -57,6 +57,6 @@ public class GameController : MonoBehaviour
         yield return new WaitForSeconds(0.5f);
         m_EnemySpawner.SpawnEnemies(SpawnMethod.InJail);
         yield return new WaitForSeconds(2.0f);
-        m_EnemyController.MoveAllEnemies();
+        StartCoroutine(m_EnemyController.UpdateEnemies());
     }
 }
