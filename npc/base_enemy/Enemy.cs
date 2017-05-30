@@ -13,7 +13,7 @@ public class Enemy : MonoBehaviour
 {
     public NavMeshAgent Agent { get { return m_Agent; } }
 
-	public GameObject m_jail;
+	public static GameObject m_Jail;
 
     [SerializeField] [Range(0, 10f)] protected float m_SpeedLow = 2f;
     [SerializeField] [Range(0, 10f)] protected float m_SpeedHigh = 8f;
@@ -38,7 +38,9 @@ public class Enemy : MonoBehaviour
         m_Collider = GetComponent<Collider>();
         m_Renderer = GetComponentsInChildren<Renderer>();
         m_Agent.speed = Random.Range(m_SpeedLow, m_SpeedHigh);
-		m_jail = GameObject.FindGameObjectWithTag ("Jail");
+
+        if(m_Jail == null)
+		    m_Jail = GameObject.FindGameObjectWithTag ("Jail");
 
         GameController.Current.EC.Register(this);
     }
@@ -84,7 +86,8 @@ public class Enemy : MonoBehaviour
 
 	public void TeleportToJail ()
 	{
-		var teleportLocation = GameObject.FindGameObjectWithTag ("InJail").GetComponent<InJail> ().RandomLocation ();
+        m_EnemyDisabled = true;
+        var teleportLocation = GameObject.FindGameObjectWithTag ("InJail").GetComponent<InJail> ().RandomLocation ();
 		gameObject.transform.position = teleportLocation;
 	}
 
