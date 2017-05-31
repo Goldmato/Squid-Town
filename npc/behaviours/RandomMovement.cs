@@ -6,33 +6,38 @@ using UnityEngine;
 using UnityEngine.AI;
 using Random = UnityEngine.Random;
 
-public class RandomMovement : MoveBehaviour
+///<summary>
+/// Rotates the enemy to a random angle and
+/// moves it forward a random distance, enters
+/// doors that are within range
+///</summary>
+public class RandomMovement : EnemyMoveBehaviour
 {
     private Door m_PrevDoor;
 
     private float m_DetectionRange;
     private float m_MoveDistance;
     private float m_DoorTriggerDistance;
+    private float m_DoorDistanceMultiplier;
 
     // Default constructor
     public RandomMovement(float moveDistanceLow = 15f, float moveDistanceHigh = 30f,
-        float detectionRange = 25f, float doorTriggerDistance = 25f)
+        float detectionRange = 25f, float doorTriggerDistance = 10f, float doorDistanceMultiplier = 2f)
     {
         m_DetectionRange = detectionRange;
         m_DoorTriggerDistance = doorTriggerDistance;
+        m_DoorDistanceMultiplier = doorDistanceMultiplier;
         m_MoveDistance = Random.Range(moveDistanceLow, moveDistanceHigh);
     }
 
     public void MoveNext(NavMeshAgent agent, Vector3 currentPos)
     {
-        // TODO: Either figure out whether the player is in range within
-        // this function or within the EnemyController, and find a place to run to
+        agent.transform.Rotate(agent.transform.up, Random.Range(0, 360));
+        Vector3 targetPos = currentPos + (agent.transform.forward * m_MoveDistance * (m_PrevDoor != null ? m_DoorDistanceMultiplier : 1));
 
         if(m_PrevDoor != null)
             m_PrevDoor.Leave();
-
-        agent.transform.Rotate(agent.transform.up, Random.Range(0, 360));
-        Vector3 targetPos = currentPos + (agent.transform.forward * m_MoveDistance);
+        m_PrevDoor = null;
 
         foreach(var col in Physics.OverlapSphere(targetPos, m_DoorTriggerDistance, Physics.AllLayers))
         {
@@ -41,14 +46,12 @@ public class RandomMovement : MoveBehaviour
                 if(col.GetComponent<Door>().Occupy())
                 {
                     m_PrevDoor = col.GetComponent<Door>();
-                    agent.destination = col.transform.position;
+                    agent.destination = m_PrevDoor.Edge;
                     return;
                 }
             }
         }
 
-        NavMeshHit hit;
-        NavMesh.SamplePosition(targetPos, out hit, m_MoveDistance, NavMesh.AllAreas);
-        agent.destination = hit.position;
+        agent.destination = targetPos;
     }
 }
