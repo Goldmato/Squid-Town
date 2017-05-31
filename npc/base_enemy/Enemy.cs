@@ -8,23 +8,26 @@ using UnityEngine.AI;
 /// Base enemy behaviour
 ///</summary>
 [RequireComponent(typeof(NavMeshAgent))]
+[RequireComponent(typeof(Animator))]
 [RequireComponent(typeof(Collider))]
 public class Enemy : MonoBehaviour
 {
     public NavMeshAgent Agent { get { return m_Agent; } }
-
-	public static GameObject m_Jail;
+    public bool Disabled { get { return m_EnemyDisabled; } }
 
     [SerializeField] [Range(0, 10f)] protected float m_SpeedLow = 2f;
     [SerializeField] [Range(0, 10f)] protected float m_SpeedHigh = 8f;
     [SerializeField] [Range(0, 10f)] protected float m_HideDelayLow = 1f;
     [SerializeField] [Range(0, 10f)] protected float m_HideDelayHigh = 5f;
 
-    protected MoveBehaviour MoveMode;
+    protected EnemyMoveBehaviour MoveMode;
 
     protected Renderer[] m_Renderer;
     protected NavMeshAgent m_Agent;
+    protected Animator m_Animator;
     protected Collider m_Collider;
+
+    private static InJail m_InJail;
 
     private float m_DisableDelay;
     private bool m_EnemyDisabled;
@@ -35,14 +38,15 @@ public class Enemy : MonoBehaviour
     void Awake()
     {
         m_Agent = GetComponent<NavMeshAgent>();
+        m_Animator = GetComponent<Animator>();
         m_Collider = GetComponent<Collider>();
         m_Renderer = GetComponentsInChildren<Renderer>();
         m_Agent.speed = Random.Range(m_SpeedLow, m_SpeedHigh);
 
-        if(m_Jail == null)
-		    m_Jail = GameObject.FindGameObjectWithTag ("Jail");
-
         GameController.Current.EC.Register(this);
+
+        if(m_InJail == null)
+            m_InJail = GameObject.FindGameObjectWithTag("InJail").GetComponent<InJail>();
     }
 
     void OnTriggerEnter(Collider other)
@@ -69,7 +73,8 @@ public class Enemy : MonoBehaviour
         for(int i = 0; i < m_Renderer.Length; i++) { m_Renderer[i].enabled = true; }
 
         m_EnemyDisabled = false;
-        m_Agent.isStopped = false;
+
+        Move();
     }
 
     public void Move()
@@ -84,20 +89,20 @@ public class Enemy : MonoBehaviour
         MoveMode.MoveNext(m_Agent, transform.position);
     }
 
-	public void TeleportToJail ()
-	{
+    public void TeleportToJail()
+    {
         m_EnemyDisabled = true;
-        var teleportLocation = GameObject.FindGameObjectWithTag ("InJail").GetComponent<InJail> ().RandomLocation ();
-		gameObject.transform.position = teleportLocation;
-	}
+        var teleportLocation = m_InJail.RandomLocation();
+        gameObject.transform.position = teleportLocation;
+    }
 
-	public void DisableNavMeshAgent ()
-	{
-		gameObject.GetComponent<NavMeshAgent> ().enabled = false;
-	}
+    public void DisableNavMeshAgent()
+    {
+        m_Agent.enabled = false;
+    }
 
-	public void DisableAnimator ()
-	{
-		gameObject.GetComponent<Animator> ().enabled = false;
-	}
+    public void DisableAnimator()
+    {
+        m_Animator.enabled = false;
+    }
 }
