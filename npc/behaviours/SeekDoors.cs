@@ -10,14 +10,14 @@ using UnityEngine.AI;
 /// door while ignoring the previous 2 doors visited
 /// while using this behaviour
 ///</summary>
-public class SeekDoors : MoveBehaviour
+public class SeekDoors : EnemyMoveBehaviour
 {
     private int[] m_DoorsToIgnore = { -1, -1 };
     private int m_DoorIgnoreIndex;
 
     public void MoveNext(NavMeshAgent agent, Vector3 currentPos)
     {
-        var doors = Registry.Current.Doors;
+        var doors = GameController.Current.Doors;
         doors[m_DoorsToIgnore[m_DoorIgnoreIndex]].Leave();
 
         float minDist = float.MaxValue;
@@ -42,7 +42,7 @@ public class SeekDoors : MoveBehaviour
             m_DoorIgnoreIndex = 0;
 
         if(selectedDoor >= 0 && doors[selectedDoor].Occupy())
-            agent.destination = doors[selectedDoor].transform.position;
+            agent.destination = doors[selectedDoor].Edge;
         else
             throw new UnityException("ERROR No door selected (Enemy::Move())");
     }
