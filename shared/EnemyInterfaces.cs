@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
-public interface MoveBehaviour
+public interface EnemyMoveBehaviour
 {
     void MoveNext(NavMeshAgent agent, Vector3 currentPos);
 }
