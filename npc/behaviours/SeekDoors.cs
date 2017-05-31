@@ -15,7 +15,11 @@ public class SeekDoors : EnemyMoveBehaviour
     private int[] m_DoorsToIgnore = { -1, -1 };
     private int m_DoorIgnoreIndex;
 
-    public void MoveNext(NavMeshAgent agent, Vector3 currentPos)
+    public SeekDoors(Enemy enemy) : base (enemy) 
+    {
+    }
+
+    public override void MoveNext()
     {
         var doors = GameController.Current.Doors;
         doors[m_DoorsToIgnore[m_DoorIgnoreIndex]].Leave();
@@ -28,7 +32,7 @@ public class SeekDoors : EnemyMoveBehaviour
             if(IsDoorIgnored(i))
                 continue;
 
-            float dist = Vector3.Distance(currentPos, doors[i].transform.position);
+            float dist = Vector3.Distance(m_Enemy.transform.position, doors[i].transform.position);
 
             if(dist < minDist)
             {
@@ -42,7 +46,7 @@ public class SeekDoors : EnemyMoveBehaviour
             m_DoorIgnoreIndex = 0;
 
         if(selectedDoor >= 0 && doors[selectedDoor].Occupy())
-            agent.destination = doors[selectedDoor].Edge;
+            m_Enemy.Agent.destination = doors[selectedDoor].Edge;
         else
             throw new UnityException("ERROR No door selected (Enemy::Move())");
     }
