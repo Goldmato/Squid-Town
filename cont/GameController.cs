@@ -16,9 +16,11 @@ public class GameController : MonoBehaviour
     public EnemyController EC { get { return m_EnemyController; } }
     public EnemySpawner ES { get { return m_EnemySpawner; } }
     public GameObject Jail { get { return m_MainJail; } }
+    public GameObject Player { get { return m_MainPlayer; } }
     public List<Door> Doors { get { return m_Doors; } }
 
     [SerializeField] private GameObject m_MainJail;
+    [SerializeField] private GameObject m_MainPlayer;
 
     private static GameController m_Instance;
     private static bool m_ExceptionFlag;
@@ -29,19 +31,19 @@ public class GameController : MonoBehaviour
     private TextController m_TextController;
 
     private int m_Score;
-    public int Score 
-    { 
-        get { return m_Score; } 
-        set 
+    public int Score
+    {
+        get { return m_Score; }
+        set
         {
-            m_Score = value; 
-            m_TextController.UpdateScore(value); 
+            m_Score = value;
+            m_TextController.UpdateScore(value);
             if(m_Score >= m_EnemyController.EnemyCount &&
                 m_Score > 0)
             {
                 GameWon();
             }
-        } 
+        }
     }
 
     void Awake()
@@ -62,6 +64,9 @@ public class GameController : MonoBehaviour
             Debug.LogError(activeControllers);
             throw new UnityException("Please ensure there is only one active gameController in the scene");
         }
+
+        if(m_MainPlayer == null)
+            m_MainPlayer = GameObject.FindGameObjectWithTag("Player");
 
         m_EnemyController = GetComponent<EnemyController>();
         m_EnemySpawner = GetComponent<EnemySpawner>();
