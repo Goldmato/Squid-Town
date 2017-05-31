@@ -65,12 +65,12 @@ public class EnemySpawner : MonoBehaviour
 
     void SpawnEnemiesInHouses()
     {
-        Debug.Log("Spawning [" + Registry.Current.Doors.Count + "] enemies in houses");
+        Debug.Log("Spawning [" + GameController.Current.Doors.Count + "] enemies in houses");
 
-        for(int i = 0; i < Registry.Current.Doors.Count; i++)
+        for(int i = 0; i < GameController.Current.Doors.Count; i++)
         {
             var newEnemy = Instantiate(m_SpawnableEnemies[Random.Range(0, m_SpawnableEnemies.Count)],
-                 Registry.Current.Doors[i].transform.position, Quaternion.identity) as Enemy;
+                 GameController.Current.Doors[i].transform.position, Quaternion.identity) as Enemy;
             newEnemy.transform.SetParent(m_Container.transform);
         }
     }

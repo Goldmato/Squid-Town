@@ -32,7 +32,7 @@ public class EnemyTest : MonoBehaviour
     ///</summary>
     IEnumerator GoToAllDoors()
     {
-        var doors = Registry.Current.Doors;
+        var doors = GameController.Current.Doors;
 
         Debug.Log(gameObject.name + " enemy beginning door pathfinding routine...");
 
