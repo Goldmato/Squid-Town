@@ -57,7 +57,7 @@ public class EnemySpawner : MonoBehaviour
 
             var newEnemy = Instantiate(m_SpawnableEnemies[Random.Range(0, m_SpawnableEnemies.Count)],
                  hit.position, Quaternion.identity) as Enemy;
-            newEnemy.transform.SetParent(m_Container.transform);
+            OrganizeEnemy(newEnemy.transform);
 
             // Debug.Log("Moving enemy [" + i + "] to nearest door...");
         }
@@ -71,7 +71,7 @@ public class EnemySpawner : MonoBehaviour
         {
             var newEnemy = Instantiate(m_SpawnableEnemies[Random.Range(0, m_SpawnableEnemies.Count)],
                  GameController.Current.Doors[i].transform.position, Quaternion.identity) as Enemy;
-            newEnemy.transform.SetParent(m_Container.transform);
+            OrganizeEnemy(newEnemy.transform);
         }
     }
 
@@ -86,6 +86,12 @@ public class EnemySpawner : MonoBehaviour
 
             var newEnemy = Instantiate(m_SpawnableEnemies[Random.Range(0, m_SpawnableEnemies.Count)],
                  randomPos, Quaternion.identity) as Enemy;
+            OrganizeEnemy(newEnemy.transform);
         }
+    }
+
+    void OrganizeEnemy(Transform enemyTF)
+    {
+        enemyTF.SetParent(m_Container.transform);
     }
 }
