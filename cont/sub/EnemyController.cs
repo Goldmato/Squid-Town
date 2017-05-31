@@ -19,9 +19,9 @@ public class EnemyController : MonoBehaviour
     private static EnemyController m_Instance;
 
     private bool m_UpdateEnemies;
-    private int m_IntervalFrames = 120;
+    private int m_IntervalFrames = 30;
 
-    const byte MAX_SKIPPED_UPDATES = 5;
+    const byte MAX_SKIPPED_UPDATES = 25;
 
     void Update()
     {
@@ -49,11 +49,15 @@ public class EnemyController : MonoBehaviour
 
         for(int i = 0; i < m_Enemies.Count; i++)
         {
-            if(!m_Enemies[i].Disabled && (!m_Enemies[i].Agent.hasPath || m_SkippedUpdates[i] >= MAX_SKIPPED_UPDATES))
+            if(!m_Enemies[i].Disabled && (!m_Enemies[i].Agent.hasPath || m_SkippedUpdates[i] >= MAX_SKIPPED_UPDATES || m_Enemies[i].RunState))
             {
                 // Debug.Log("Enemy [" + i + "] moved after [" + m_SkippedUpdates[i] + "] skipped update cycles");
 
-                m_Enemies[i].Move();
+                if(m_Enemies[i].RunState)
+                    m_Enemies[i].RunFromPlayer();
+                else
+                    m_Enemies[i].MoveUpdate();
+
                 m_SkippedUpdates[i] = 0;
                 numEnemiesMoved++;
             }
