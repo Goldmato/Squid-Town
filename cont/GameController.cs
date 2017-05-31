@@ -16,7 +16,19 @@ public class GameController : MonoBehaviour
     public EnemyController EC { get { return m_EnemyController; } }
     public EnemySpawner ES { get { return m_EnemySpawner; } }
     public GameObject Jail { get { return m_MainJail; } }
+    public List<Door> Doors { get { return m_Doors; } }
 
+    [SerializeField] private GameObject m_MainJail;
+
+    private static GameController m_Instance;
+    private static bool m_ExceptionFlag;
+
+    private List<Door> m_Doors = new List<Door>();
+    private EnemyController m_EnemyController;
+    private EnemySpawner m_EnemySpawner;
+    private TextController m_TextController;
+
+    private int m_Score;
     public int Score 
     { 
         get { return m_Score; } 
@@ -31,17 +43,6 @@ public class GameController : MonoBehaviour
             }
         } 
     }
-
-    [SerializeField] private GameObject m_MainJail;
-
-    private static GameController m_Instance;
-    private static bool m_ExceptionFlag;
-
-    private EnemyController m_EnemyController;
-    private EnemySpawner m_EnemySpawner;
-    private TextController m_TextController;
-
-    private int m_Score;
 
     void Awake()
     {
@@ -65,6 +66,12 @@ public class GameController : MonoBehaviour
         m_EnemyController = GetComponent<EnemyController>();
         m_EnemySpawner = GetComponent<EnemySpawner>();
         m_TextController = GetComponent<TextController>();
+
+        // Find all doors in scene and add to list
+        foreach(Door d in FindObjectsOfType(typeof(Door)))
+        {
+            m_Doors.Add(d);
+        }
     }
 
     void Start()
@@ -80,7 +87,7 @@ public class GameController : MonoBehaviour
         yield return new WaitForSeconds(0.5f);
         m_EnemySpawner.SpawnEnemies(SpawnMethod.InJail);
         yield return new WaitForSeconds(2.0f);
-        StartCoroutine(m_EnemyController.UpdateEnemies());
+        m_EnemyController.StartEnemyUpdateCycle();
     }
 
     void GameWon()
