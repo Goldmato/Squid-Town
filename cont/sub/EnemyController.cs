@@ -14,12 +14,14 @@ public class EnemyController : MonoBehaviour
     public int EnemyCount { get { return m_Enemies.Count; } }
 
     private List<Enemy> m_Enemies = new List<Enemy>();
+    private List<byte> m_SkippedUpdates = new List<byte>();
 
     private static EnemyController m_Instance;
-    private static bool m_ExceptionFlag;
 
     private bool m_UpdateEnemies;
     private int m_IntervalFrames = 120;
+
+    const byte MAX_SKIPPED_UPDATES = 5;
 
     void Update()
     {
@@ -30,9 +32,15 @@ public class EnemyController : MonoBehaviour
         }
     }
 
+    public void StartEnemyUpdateCycle()
+    {
+        StartCoroutine(UpdateEnemies());
+    }
+
     public void Register(Enemy enemy)
     {
         m_Enemies.Add(enemy);
+        m_SkippedUpdates.Add(0);
     }
 
     public void MoveAllEnemies()
@@ -41,17 +49,24 @@ public class EnemyController : MonoBehaviour
 
         for(int i = 0; i < m_Enemies.Count; i++)
         {
-            if(!m_Enemies[i].Agent.hasPath)
+            if(!m_Enemies[i].Disabled && (!m_Enemies[i].Agent.hasPath || m_SkippedUpdates[i] >= MAX_SKIPPED_UPDATES))
             {
+                // Debug.Log("Enemy [" + i + "] moved after [" + m_SkippedUpdates[i] + "] skipped update cycles");
+
                 m_Enemies[i].Move();
+                m_SkippedUpdates[i] = 0;
                 numEnemiesMoved++;
+            }
+            else
+            {
+                m_SkippedUpdates[i]++;
             }
         }
 
         // Debug.Log(numEnemiesMoved + " Enemies moved during update");
     }
 
-    public IEnumerator UpdateEnemies()
+    IEnumerator UpdateEnemies()
     {
         m_UpdateEnemies = true;
         while(m_UpdateEnemies)
