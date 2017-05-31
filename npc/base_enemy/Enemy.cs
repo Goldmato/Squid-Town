@@ -14,9 +14,31 @@ public class Enemy : MonoBehaviour
 {
     public NavMeshAgent Agent { get { return m_Agent; } }
     public bool Disabled { get { return m_EnemyDisabled; } }
+    public bool RunState 
+    {
+        get { return m_EnemyRunState; }
+        set 
+        {
+            m_EnemyRunState = value;
+            if(value)
+            {
+                m_Agent.acceleration = m_RunSpeed * 2;
+                m_Agent.speed = m_RunSpeed;
+            }
+            else
+            {
+                m_Agent.acceleration = m_MoveSpeed * 2;
+                m_Agent.speed = m_MoveSpeed;
+            }
+            
+            Debug.Log("Speed increased by: " + (m_Agent.speed - m_MoveSpeed));
+        }
+    }
 
-    [SerializeField] [Range(0, 10f)] protected float m_SpeedLow = 2f;
-    [SerializeField] [Range(0, 10f)] protected float m_SpeedHigh = 8f;
+    [SerializeField] [Range(0, 10f)] protected float m_SpeedLow = 3f;
+    [SerializeField] [Range(0, 10f)] protected float m_SpeedHigh = 5f;
+    [SerializeField] [Range(10f, 20f)] protected float m_RunSpeedLow = 15f;
+    [SerializeField] [Range(10f, 20f)] protected float m_RunSpeedHigh = 18f;
     [SerializeField] [Range(0, 10f)] protected float m_HideDelayLow = 1f;
     [SerializeField] [Range(0, 10f)] protected float m_HideDelayHigh = 5f;
 
@@ -30,7 +52,10 @@ public class Enemy : MonoBehaviour
     private static InJail m_InJail;
 
     private float m_DisableDelay;
+    private float m_MoveSpeed;
+    private float m_RunSpeed;
     private bool m_EnemyDisabled;
+    private bool m_EnemyRunState;
     private int m_DoorIgnoreIndex;
 
     const float DISABLE_INTERVAL = 5f;
@@ -41,7 +66,11 @@ public class Enemy : MonoBehaviour
         m_Animator = GetComponent<Animator>();
         m_Collider = GetComponent<Collider>();
         m_Renderer = GetComponentsInChildren<Renderer>();
-        m_Agent.speed = Random.Range(m_SpeedLow, m_SpeedHigh);
+
+        m_MoveSpeed = Random.Range(m_SpeedLow, m_SpeedHigh);
+        m_RunSpeed = Random.Range(m_RunSpeedLow, m_RunSpeedHigh);
+
+        RunState = false;
 
         GameController.Current.EC.Register(this);
 
@@ -74,19 +103,33 @@ public class Enemy : MonoBehaviour
 
         m_EnemyDisabled = false;
 
-        Move();
+        MoveUpdate();
     }
 
-    public void Move()
+    protected void MoveInitialize()
+    {
+        if(MoveMode == null)
+            MoveMode = new RandomMovement(this);
+
+        m_Agent.isStopped = false;
+    }
+
+    public void RunFromPlayer()
     {
         if(m_EnemyDisabled)
             return;
-        if(MoveMode == null)
-            MoveMode = new RandomMovement();
+        MoveInitialize();
 
-        m_Agent.isStopped = false;
+        MoveMode.RunFromPlayer();
+    }
 
-        MoveMode.MoveNext(m_Agent, transform.position);
+    public void MoveUpdate()
+    {
+        if(m_EnemyDisabled)
+            return;
+        MoveInitialize();
+
+        MoveMode.MoveNext();
     }
 
     public void TeleportToJail()
