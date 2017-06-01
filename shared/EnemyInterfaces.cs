@@ -6,6 +6,7 @@ using UnityEngine.AI;
 
 ///<summary>
 /// Abstract interface for all Enemy movement behaviour classes
+/// which includes base RunFromPlayer behaviour
 ///</summary>
 public abstract class EnemyMoveBehaviour
 {
@@ -16,14 +17,10 @@ public abstract class EnemyMoveBehaviour
         m_Enemy = enemy;
     }
 
-    public abstract void MoveNext();
+    public abstract bool MoveNext();
 
     public void RunFromPlayer(float distance = 25f)
     {
-        // TODO: Find angle between player and enemy and send enemy
-        // a random distance in that direction
-        Debug.Log("Running from player!");
-
         var player = GameController.Current.Player;
 
         Vector3 direction = (m_Enemy.transform.position - player.transform.position).normalized;
