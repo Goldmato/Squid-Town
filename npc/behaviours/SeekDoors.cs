@@ -19,10 +19,9 @@ public class SeekDoors : EnemyMoveBehaviour
     {
     }
 
-    public override void MoveNext()
+    public override bool MoveNext()
     {
         var doors = GameController.Current.Doors;
-        doors[m_DoorsToIgnore[m_DoorIgnoreIndex]].Leave();
 
         float minDist = float.MaxValue;
         int selectedDoor = -1;
@@ -45,10 +44,11 @@ public class SeekDoors : EnemyMoveBehaviour
         if(m_DoorIgnoreIndex == m_DoorsToIgnore.Length)
             m_DoorIgnoreIndex = 0;
 
-        if(selectedDoor >= 0 && doors[selectedDoor].Occupy())
+        if(selectedDoor >= 0)
             m_Enemy.Agent.destination = doors[selectedDoor].Edge;
         else
-            throw new UnityException("ERROR No door selected (Enemy::Move())");
+            return false;
+        return true;
     }
 
     bool IsDoorIgnored(int index)
