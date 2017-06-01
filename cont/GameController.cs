@@ -37,7 +37,7 @@ public class GameController : MonoBehaviour
         set
         {
             m_Score = value;
-            m_TextController.UpdateScore(value);
+            m_TextController.UpdateScore(value, m_EnemyController.EnemyCount - value);
             if(m_Score >= m_EnemyController.EnemyCount &&
                 m_Score > 0)
             {
@@ -81,17 +81,16 @@ public class GameController : MonoBehaviour
 
     void Start()
     {
-        // Set intial score to 0;
-        Score = 0;
-
         StartCoroutine(SpawnFirstWaveTest());
     }
 
     IEnumerator SpawnFirstWaveTest()
     {
         yield return new WaitForSeconds(0.5f);
-        m_EnemySpawner.SpawnEnemies(SpawnMethod.InJail);
-        yield return new WaitForSeconds(2.0f);
+        m_EnemySpawner.SpawnEnemies(SpawnMethod.InJail, BehaviourType.RandomMovement, 5);
+        m_EnemySpawner.SpawnEnemies(SpawnMethod.Random, BehaviourType.SeekDoors, Doors.Count);
+        Score = 0;
+        yield return new WaitForSeconds(1.0f);
         m_EnemyController.StartEnemyUpdateCycle();
     }
 
