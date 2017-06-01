@@ -14,10 +14,10 @@ public class Enemy : MonoBehaviour
 {
     public NavMeshAgent Agent { get { return m_Agent; } }
     public bool Disabled { get { return m_EnemyDisabled; } }
-    public bool RunState 
+    public bool RunState
     {
         get { return m_EnemyRunState; }
-        set 
+        set
         {
             m_EnemyRunState = value;
             if(value)
@@ -30,8 +30,8 @@ public class Enemy : MonoBehaviour
                 m_Agent.acceleration = m_MoveSpeed * 2;
                 m_Agent.speed = m_MoveSpeed;
             }
-            
-            Debug.Log("Speed increased by: " + (m_Agent.speed - m_MoveSpeed));
+
+            // Debug.Log("Speed increased by: " + (m_Agent.speed - m_MoveSpeed));
         }
     }
 
@@ -39,6 +39,8 @@ public class Enemy : MonoBehaviour
     [SerializeField] [Range(0, 10f)] protected float m_SpeedHigh = 5f;
     [SerializeField] [Range(10f, 20f)] protected float m_RunSpeedLow = 15f;
     [SerializeField] [Range(10f, 20f)] protected float m_RunSpeedHigh = 18f;
+    [SerializeField] [Range(10f, 20f)] protected float m_RunDistanceLow = 10f;
+    [SerializeField] [Range(10f, 20f)] protected float m_RunDistanceHigh = 20f;
     [SerializeField] [Range(0, 10f)] protected float m_HideDelayLow = 1f;
     [SerializeField] [Range(0, 10f)] protected float m_HideDelayHigh = 5f;
 
@@ -120,7 +122,7 @@ public class Enemy : MonoBehaviour
             return;
         MoveInitialize();
 
-        MoveMode.RunFromPlayer();
+        MoveMode.RunFromPlayer(Random.Range(m_RunDistanceLow, m_RunDistanceHigh));
     }
 
     public void MoveUpdate()
@@ -129,7 +131,23 @@ public class Enemy : MonoBehaviour
             return;
         MoveInitialize();
 
-        MoveMode.MoveNext();
+        bool moveSuccesful = MoveMode.MoveNext();
+        // Debug.Log("Enemy move successful: " + moveSuccesful);
+    }
+
+    public void SetMoveMode(BehaviourType ?moveType)
+    {
+        switch(moveType)
+        {
+            case BehaviourType.RandomMovement:
+                MoveMode = new RandomMovement(this);
+                break;
+            case BehaviourType.SeekDoors:
+                MoveMode = new SeekDoors(this);
+                break;
+            default:
+                goto case BehaviourType.RandomMovement;
+        }
     }
 
     public void TeleportToJail()
@@ -139,13 +157,7 @@ public class Enemy : MonoBehaviour
         gameObject.transform.position = teleportLocation;
     }
 
-    public void DisableNavMeshAgent()
-    {
-        m_Agent.enabled = false;
-    }
+    public void DisableNavMeshAgent() { m_Agent.enabled = false; }
 
-    public void DisableAnimator()
-    {
-        m_Animator.enabled = false;
-    }
+    public void DisableAnimator() { m_Animator.enabled = false; }
 }
