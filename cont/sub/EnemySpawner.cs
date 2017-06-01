@@ -24,25 +24,25 @@ public class EnemySpawner : MonoBehaviour
         m_InJail = GameObject.FindGameObjectWithTag("InJail").GetComponent<InJail>();
     }
 
-    public void SpawnEnemies(SpawnMethod method, int numEnemies = 10)
+    public void SpawnEnemies(SpawnMethod method, BehaviourType ?moveType = null, int numEnemies = 10)
     {
         switch(method)
         {
             case SpawnMethod.Random:
-                SpawnEnemiesRandom(numEnemies);
+                SpawnEnemiesRandom(moveType, numEnemies);
                 break;
             case SpawnMethod.InHouses:
-                SpawnEnemiesInHouses();
+                SpawnEnemiesInHouses(moveType);
                 break;
             case SpawnMethod.InJail:
-                SpawnEnemiesInJail(numEnemies);
+                SpawnEnemiesInJail(moveType, numEnemies);
                 break;
             default:
                 throw new UnityException("Invalid spawn method requested (EnemyManager)");
         }
     }
 
-    void SpawnEnemiesRandom(int numEnemies)
+    void SpawnEnemiesRandom(BehaviourType ?moveType, int numEnemies)
     {
         Debug.Log("Spawning [" + numEnemies + "] enemies randomly");
 
@@ -57,13 +57,14 @@ public class EnemySpawner : MonoBehaviour
 
             var newEnemy = Instantiate(m_SpawnableEnemies[Random.Range(0, m_SpawnableEnemies.Count)],
                  hit.position, Quaternion.identity) as Enemy;
+            newEnemy.SetMoveMode(moveType);
             OrganizeEnemy(newEnemy.transform);
 
             // Debug.Log("Moving enemy [" + i + "] to nearest door...");
         }
     }
 
-    void SpawnEnemiesInHouses()
+    void SpawnEnemiesInHouses(BehaviourType ?moveType)
     {
         Debug.Log("Spawning [" + GameController.Current.Doors.Count + "] enemies in houses");
 
@@ -71,11 +72,12 @@ public class EnemySpawner : MonoBehaviour
         {
             var newEnemy = Instantiate(m_SpawnableEnemies[Random.Range(0, m_SpawnableEnemies.Count)],
                  GameController.Current.Doors[i].transform.position, Quaternion.identity) as Enemy;
+            newEnemy.SetMoveMode(moveType);
             OrganizeEnemy(newEnemy.transform);
         }
     }
 
-    void SpawnEnemiesInJail(int numEnemies)
+    void SpawnEnemiesInJail(BehaviourType ?moveType, int numEnemies)
     {
         Debug.Log("Spawning [" + numEnemies + "] enemies in jail");
 
@@ -86,6 +88,7 @@ public class EnemySpawner : MonoBehaviour
 
             var newEnemy = Instantiate(m_SpawnableEnemies[Random.Range(0, m_SpawnableEnemies.Count)],
                  randomPos, Quaternion.identity) as Enemy;
+            newEnemy.SetMoveMode(moveType);
             OrganizeEnemy(newEnemy.transform);
         }
     }
