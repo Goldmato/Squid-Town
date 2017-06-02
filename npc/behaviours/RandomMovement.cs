@@ -13,17 +13,13 @@ using Random = UnityEngine.Random;
 ///</summary>
 public class RandomMovement : EnemyMoveBehaviour
 {
-    private Door m_PrevDoor;
-
     private float m_MoveDistance;
-    private float m_DoorTriggerDistance;
     private float m_DoorDistanceMultiplier;
 
     // Default constructor
     public RandomMovement(Enemy enemy, float moveDistanceLow = 15f, float moveDistanceHigh = 30f,
-        float doorTriggerDistance = 10f, float doorDistanceMultiplier = 2f) : base(enemy)
+        float doorTriggerDistance = 10f, float doorDistanceMultiplier = 2f) : base(enemy, doorTriggerDistance)
     {
-        m_DoorTriggerDistance = doorTriggerDistance;
         m_DoorDistanceMultiplier = doorDistanceMultiplier;
         m_MoveDistance = Random.Range(moveDistanceLow, moveDistanceHigh);
     }
@@ -38,18 +34,8 @@ public class RandomMovement : EnemyMoveBehaviour
             m_PrevDoor.Leave();
         m_PrevDoor = null;
 
-        foreach(var col in Physics.OverlapSphere(targetPos, m_DoorTriggerDistance, Physics.AllLayers))
-        {
-            if(col.CompareTag("Door"))
-            {
-                if(col.GetComponent<Door>().Occupy())
-                {
-                    m_PrevDoor = col.GetComponent<Door>();
-                    m_Enemy.Agent.destination = m_PrevDoor.Edge;
-                    return false;
-                }
-            }
-        }
+        if(CheckForDoor(targetPos, m_DoorTriggerDistance))
+            return false;
 
         m_Enemy.Agent.destination = targetPos;
         return true;

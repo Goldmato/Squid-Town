@@ -22,16 +22,7 @@ public class EnemyController : MonoBehaviour
     private int m_IntervalFrames = 30;
 
     const byte MAX_SKIPPED_UPDATES = 25;
-
-    void Update()
-    {
-        // DEBUGGING/TESTING
-        if(Input.GetKeyDown(KeyCode.Tab))
-        {
-            MoveAllEnemies();
-        }
-    }
-
+    
     public void StartEnemyUpdateCycle()
     {
         StartCoroutine(UpdateEnemies());
@@ -43,31 +34,22 @@ public class EnemyController : MonoBehaviour
         m_SkippedUpdates.Add(0);
     }
 
-    public void MoveAllEnemies()
+    public void MoveEnemy(int index)
     {
-        int numEnemiesMoved = 0;
-
-        for(int i = 0; i < m_Enemies.Count; i++)
+        if(!m_Enemies[index].Disabled && (!m_Enemies[index].Agent.hasPath || m_SkippedUpdates[index] >= MAX_SKIPPED_UPDATES || m_Enemies[index].RunState))
         {
-            if(!m_Enemies[i].Disabled && (!m_Enemies[i].Agent.hasPath || m_SkippedUpdates[i] >= MAX_SKIPPED_UPDATES || m_Enemies[i].RunState))
-            {
-                // Debug.Log("Enemy [" + i + "] moved after [" + m_SkippedUpdates[i] + "] skipped update cycles");
-
-                if(m_Enemies[i].RunState)
-                    m_Enemies[i].RunFromPlayer();
-                else
-                    m_Enemies[i].MoveUpdate();
-
-                m_SkippedUpdates[i] = 0;
-                numEnemiesMoved++;
-            }
+            // Debug.Log("Enemy [" + i + "] moved after [" + m_SkippedUpdates[i] + "] skipped update cycles");
+            if(m_Enemies[index].RunState)
+                m_Enemies[index].RunFromPlayer();
             else
-            {
-                m_SkippedUpdates[i]++;
-            }
-        }
+                m_Enemies[index].MoveUpdate();
 
-        // Debug.Log(numEnemiesMoved + " Enemies moved during update");
+            m_SkippedUpdates[index] = 0;
+        }
+        else
+        {
+            m_SkippedUpdates[index]++;
+        }
     }
 
     IEnumerator UpdateEnemies()
@@ -75,11 +57,14 @@ public class EnemyController : MonoBehaviour
         m_UpdateEnemies = true;
         while(m_UpdateEnemies)
         {
-            MoveAllEnemies();
-
-            for(int i = 0; i < m_IntervalFrames; i++)
+            for (int i = 0; i < EnemyCount; i++)
             {
-                yield return null;
+                MoveEnemy(i);
+
+                for(int j = 0; j < m_IntervalFrames / EnemyCount; j++)
+                {
+                    yield return null;
+                }
             }
         }
     }

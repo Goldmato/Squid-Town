@@ -14,6 +14,7 @@ public class Enemy : MonoBehaviour
 {
     public NavMeshAgent Agent { get { return m_Agent; } }
     public bool Disabled { get { return m_EnemyDisabled; } }
+    public bool Stopped { get { return m_EnemyStopped; } }
     public bool RunState
     {
         get { return m_EnemyRunState; }
@@ -56,6 +57,7 @@ public class Enemy : MonoBehaviour
     private float m_DisableDelay;
     private float m_MoveSpeed;
     private float m_RunSpeed;
+    private bool m_EnemyStopped;
     private bool m_EnemyDisabled;
     private bool m_EnemyRunState;
     private int m_DoorIgnoreIndex;
@@ -78,6 +80,11 @@ public class Enemy : MonoBehaviour
 
         if(m_InJail == null)
             m_InJail = GameObject.FindGameObjectWithTag("InJail").GetComponent<InJail>();
+    }
+    
+    void Update()
+    {
+        m_EnemyStopped = m_Agent.velocity.sqrMagnitude <= 0f & m_EnemyRunState;
     }
 
     void OnTriggerEnter(Collider other)
@@ -122,7 +129,10 @@ public class Enemy : MonoBehaviour
             return;
         MoveInitialize();
 
-        MoveMode.RunFromPlayer(Random.Range(m_RunDistanceLow, m_RunDistanceHigh));
+        if(!m_EnemyStopped)
+            MoveMode.RunFromPlayer(Random.Range(m_RunDistanceLow, m_RunDistanceHigh));
+        else
+            GoRightOrLeft();
     }
 
     public void MoveUpdate()
@@ -133,6 +143,22 @@ public class Enemy : MonoBehaviour
 
         bool moveSuccesful = MoveMode.MoveNext();
         // Debug.Log("Enemy move successful: " + moveSuccesful);
+    }
+
+    public void GoRightOrLeft(bool ?rightOrLeft = null)
+    {
+        bool direction;
+
+        if(rightOrLeft != null)
+            direction = (bool)rightOrLeft;
+        else
+            direction = Random.value > 0.5 ? true : false;
+
+        if(m_EnemyDisabled)
+            return;
+        MoveInitialize();
+
+        MoveMode.GoRightOrLeft(direction, Random.Range(m_RunDistanceLow, m_RunDistanceHigh));
     }
 
     public void SetMoveMode(BehaviourType ?moveType)
