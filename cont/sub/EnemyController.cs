@@ -11,7 +11,7 @@ public class EnemyController : MonoBehaviour
     public static EnemyController Current { get { return m_Instance; } }
     
     public bool UpdateRunning { get { return m_UpdateEnemies; } set { m_UpdateEnemies = value; } }
-    public int EnemyCount { get { return m_Enemies.Count; } }
+    public int EnemyCount { get { return m_Enemies.Count; }  }
 
     private List<Enemy> m_Enemies = new List<Enemy>();
     private List<byte> m_SkippedUpdates = new List<byte>();

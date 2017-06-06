@@ -16,12 +16,12 @@ public class EnemySpawner : MonoBehaviour
     [SerializeField] private List<Enemy> m_SpawnableEnemies;
 
     private GameObject m_Container;
-    private InJail m_InJail;
+    private JailFloor m_InJail;
 
     void Start()
     {
         m_Container = new GameObject("Enemies");
-        m_InJail = GameObject.FindGameObjectWithTag("InJail").GetComponent<InJail>();
+        m_InJail = GameObject.FindGameObjectWithTag("InJail").GetComponent<JailFloor>();
     }
 
     public void SpawnEnemies(SpawnMethod method, BehaviourType ?moveType = null, int numEnemies = 10)
