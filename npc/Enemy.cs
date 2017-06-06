@@ -52,15 +52,15 @@ public class Enemy : MonoBehaviour
     protected Animator m_Animator;
     protected Collider m_Collider;
 
-    private static InJail m_InJail;
+    protected static JailFloor m_InJail;
 
-    private float m_DisableDelay;
-    private float m_MoveSpeed;
-    private float m_RunSpeed;
-    private bool m_EnemyStopped;
-    private bool m_EnemyDisabled;
-    private bool m_EnemyRunState;
-    private int m_DoorIgnoreIndex;
+    protected float m_DisableDelay;
+    protected float m_MoveSpeed;
+    protected float m_RunSpeed;
+    protected bool m_EnemyStopped;
+    protected bool m_EnemyDisabled;
+    protected bool m_EnemyRunState;
+    protected int m_DoorIgnoreIndex;
 
     const float DISABLE_INTERVAL = 5f;
 
@@ -79,7 +79,7 @@ public class Enemy : MonoBehaviour
         GameController.Current.EC.Register(this);
 
         if(m_InJail == null)
-            m_InJail = GameObject.FindGameObjectWithTag("InJail").GetComponent<InJail>();
+            m_InJail = GameObject.FindGameObjectWithTag("InJail").GetComponent<JailFloor>();
     }
     
     void Update()
@@ -99,7 +99,7 @@ public class Enemy : MonoBehaviour
         }
     }
 
-    protected IEnumerator DisableEnemy()
+    protected virtual IEnumerator DisableEnemy()
     {
         m_EnemyDisabled = true;
         m_Agent.isStopped = true;
@@ -115,7 +115,7 @@ public class Enemy : MonoBehaviour
         MoveUpdate();
     }
 
-    protected void MoveInitialize()
+    protected virtual void MoveInitialize()
     {
         if(MoveMode == null)
             MoveMode = new RandomMovement(this);
@@ -123,7 +123,7 @@ public class Enemy : MonoBehaviour
         m_Agent.isStopped = false;
     }
 
-    public void RunFromPlayer()
+    public virtual void RunFromPlayer()
     {
         if(m_EnemyDisabled)
             return;
@@ -135,7 +135,7 @@ public class Enemy : MonoBehaviour
             GoRightOrLeft();
     }
 
-    public void MoveUpdate()
+    public virtual void MoveUpdate()
     {
         if(m_EnemyDisabled)
             return;
@@ -145,23 +145,19 @@ public class Enemy : MonoBehaviour
         // Debug.Log("Enemy move successful: " + moveSuccesful);
     }
 
-    public void GoRightOrLeft(bool ?rightOrLeft = null)
+    public virtual void GoRightOrLeft(bool ?rightOrLeft = null)
     {
-        bool direction;
-
-        if(rightOrLeft != null)
-            direction = (bool)rightOrLeft;
-        else
-            direction = Random.value > 0.5 ? true : false;
+        if(rightOrLeft == null)
+            rightOrLeft = Random.value > 0.5 ? true : false;
 
         if(m_EnemyDisabled)
             return;
         MoveInitialize();
 
-        MoveMode.GoRightOrLeft(direction, Random.Range(m_RunDistanceLow, m_RunDistanceHigh));
+        MoveMode.GoRightOrLeft((bool)rightOrLeft, Random.Range(m_RunDistanceLow, m_RunDistanceHigh));
     }
 
-    public void SetMoveMode(BehaviourType ?moveType)
+    public virtual void SetMoveMode(BehaviourType ?moveType)
     {
         switch(moveType)
         {
@@ -176,14 +172,14 @@ public class Enemy : MonoBehaviour
         }
     }
 
-    public void TeleportToJail()
+    public virtual void TeleportToJail()
     {
         m_EnemyDisabled = true;
         var teleportLocation = m_InJail.RandomLocation();
         gameObject.transform.position = teleportLocation;
     }
 
-    public void DisableNavMeshAgent() { m_Agent.enabled = false; }
+    public virtual void DisableNavMeshAgent() { m_Agent.enabled = false; }
 
-    public void DisableAnimator() { m_Animator.enabled = false; }
+    public virtual void DisableAnimator() { m_Animator.enabled = false; }
 }
