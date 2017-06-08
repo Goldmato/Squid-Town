@@ -10,10 +10,13 @@ using UnityEngine.AI;
 ///</summary>
 public abstract class EnemyMoveBehaviour
 {
+    public bool SkipUpdates { get { return m_SkipUpdates; } }
+
     protected BaseEnemy m_Enemy;
     protected Door m_PrevDoor;
 
     protected float m_DoorTriggerDistance;
+    protected bool m_SkipUpdates;
 
     public EnemyMoveBehaviour(BaseEnemy enemy, float doorTriggerDistance = 10f)
     {

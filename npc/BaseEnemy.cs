@@ -13,6 +13,8 @@ using UnityEngine.AI;
 public class BaseEnemy : MonoBehaviour
 {
     public NavMeshAgent Agent { get { return m_Agent; } }
+    public bool SkipUpdates { get { if(MoveMode != null) 
+        return MoveMode.SkipUpdates & !m_EnemyStopped; else return false; } }
     public bool Disabled { get { return m_EnemyDisabled; } }
     public bool Stopped { get { return m_EnemyStopped; } }
     public bool RunState
@@ -80,7 +82,20 @@ public class BaseEnemy : MonoBehaviour
     
     void Update()
     {
-        m_EnemyStopped = m_Agent.velocity.sqrMagnitude <= 0f & m_EnemyRunState;
+        if (!m_Agent.pathPending)
+        {
+            if (m_Agent.remainingDistance <= m_Agent.stoppingDistance)
+            {
+                if (!m_Agent.hasPath || m_Agent.velocity.sqrMagnitude == 0f)
+                {
+                    m_EnemyStopped = !m_EnemyRunState;
+                }
+            }
+        }
+        else
+        {
+            m_EnemyStopped = false;
+        }
     }
 
     protected virtual void MoveInitialize()

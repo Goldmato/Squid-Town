@@ -36,7 +36,7 @@ public class EnemyController : MonoBehaviour
 
     public void MoveEnemy(int index)
     {
-        if(m_Enemies[index].Disabled)
+        if(m_Enemies[index].Disabled || m_Enemies[index].SkipUpdates)
             return;
         if(!m_Enemies[index].Agent.hasPath || m_SkippedUpdates[index] >= MAX_SKIPPED_UPDATES || m_Enemies[index].RunState)
         {
