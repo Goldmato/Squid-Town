@@ -5,4 +5,6 @@ using UnityEngine;
 
 public enum SpawnMethod : byte { Random, InHouses, InJail }
 
-public enum BehaviourType : byte { RandomMovement, SeekDoors}
+public enum BehaviourType : byte { RandomMovement, SeekDoors, Starfish}
+
+public enum EnemyType : byte { Squid, Starfish }
