@@ -13,7 +13,7 @@ public class EnemyController : MonoBehaviour
     public bool UpdateRunning { get { return m_UpdateEnemies; } set { m_UpdateEnemies = value; } }
     public int EnemyCount { get { return m_Enemies.Count; }  }
 
-    private List<Enemy> m_Enemies = new List<Enemy>();
+    private List<BaseEnemy> m_Enemies = new List<BaseEnemy>();
     private List<byte> m_SkippedUpdates = new List<byte>();
 
     private static EnemyController m_Instance;
@@ -28,7 +28,7 @@ public class EnemyController : MonoBehaviour
         StartCoroutine(UpdateEnemies());
     }
 
-    public void Register(Enemy enemy)
+    public void Register(BaseEnemy enemy)
     {
         m_Enemies.Add(enemy);
         m_SkippedUpdates.Add(0);
@@ -36,7 +36,9 @@ public class EnemyController : MonoBehaviour
 
     public void MoveEnemy(int index)
     {
-        if(!m_Enemies[index].Disabled && (!m_Enemies[index].Agent.hasPath || m_SkippedUpdates[index] >= MAX_SKIPPED_UPDATES || m_Enemies[index].RunState))
+        if(m_Enemies[index].Disabled)
+            return;
+        if(!m_Enemies[index].Agent.hasPath || m_SkippedUpdates[index] >= MAX_SKIPPED_UPDATES || m_Enemies[index].RunState)
         {
             // Debug.Log("Enemy [" + i + "] moved after [" + m_SkippedUpdates[i] + "] skipped update cycles");
             if(m_Enemies[index].RunState)
