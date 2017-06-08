@@ -6,7 +6,7 @@ using UnityEngine;
 ///<summary>
 /// Base squid enemy behaviour
 ///</summary>
-public class SquidEnemy : Enemy 
+public class SquidEnemy : SimpleEnemy 
 {
 	// TODO: Implement squid-only behaviours
 }

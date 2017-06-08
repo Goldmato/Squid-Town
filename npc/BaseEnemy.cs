@@ -10,7 +10,7 @@ using UnityEngine.AI;
 [RequireComponent(typeof(NavMeshAgent))]
 [RequireComponent(typeof(Animator))]
 [RequireComponent(typeof(Collider))]
-public class Enemy : MonoBehaviour
+public class BaseEnemy : MonoBehaviour
 {
     public NavMeshAgent Agent { get { return m_Agent; } }
     public bool Disabled { get { return m_EnemyDisabled; } }
@@ -42,8 +42,6 @@ public class Enemy : MonoBehaviour
     [SerializeField] [Range(10f, 20f)] protected float m_RunSpeedHigh = 18f;
     [SerializeField] [Range(10f, 20f)] protected float m_RunDistanceLow = 10f;
     [SerializeField] [Range(10f, 20f)] protected float m_RunDistanceHigh = 20f;
-    [SerializeField] [Range(0, 10f)] protected float m_HideDelayLow = 1f;
-    [SerializeField] [Range(0, 10f)] protected float m_HideDelayHigh = 5f;
 
     protected EnemyMoveBehaviour MoveMode;
 
@@ -61,8 +59,6 @@ public class Enemy : MonoBehaviour
     protected bool m_EnemyDisabled;
     protected bool m_EnemyRunState;
     protected int m_DoorIgnoreIndex;
-
-    const float DISABLE_INTERVAL = 5f;
 
     void Awake()
     {
@@ -85,34 +81,6 @@ public class Enemy : MonoBehaviour
     void Update()
     {
         m_EnemyStopped = m_Agent.velocity.sqrMagnitude <= 0f & m_EnemyRunState;
-    }
-
-    void OnTriggerEnter(Collider other)
-    {
-        if(Time.timeSinceLevelLoad > m_DisableDelay && other.CompareTag("Door"))
-        {
-            Debug.Log("Enemy entered doorway!");
-
-            // Cooldown delay for door trigger events
-            m_DisableDelay = Time.timeSinceLevelLoad + DISABLE_INTERVAL;
-            StartCoroutine(DisableEnemy());
-        }
-    }
-
-    protected virtual IEnumerator DisableEnemy()
-    {
-        m_EnemyDisabled = true;
-        m_Agent.isStopped = true;
-        for(int i = 0; i < m_Renderer.Length; i++) { m_Renderer[i].enabled = false; }
-
-        var hideDelay = Random.Range(m_HideDelayLow, m_HideDelayHigh);
-        yield return new WaitForSeconds(hideDelay);
-
-        for(int i = 0; i < m_Renderer.Length; i++) { m_Renderer[i].enabled = true; }
-
-        m_EnemyDisabled = false;
-
-        MoveUpdate();
     }
 
     protected virtual void MoveInitialize()
@@ -147,12 +115,12 @@ public class Enemy : MonoBehaviour
 
     public virtual void GoRightOrLeft(bool ?rightOrLeft = null)
     {
-        if(rightOrLeft == null)
-            rightOrLeft = Random.value > 0.5 ? true : false;
-
         if(m_EnemyDisabled)
             return;
         MoveInitialize();
+
+        if(rightOrLeft == null)
+            rightOrLeft = Random.value > 0.5 ? true : false;
 
         MoveMode.GoRightOrLeft((bool)rightOrLeft, Random.Range(m_RunDistanceLow, m_RunDistanceHigh));
     }
@@ -167,6 +135,9 @@ public class Enemy : MonoBehaviour
             case BehaviourType.SeekDoors:
                 MoveMode = new SeekDoors(this);
                 break;
+            case BehaviourType.Starfish:
+                MoveMode = new StarfishMoveBehaviour(this);
+                break;
             default:
                 goto case BehaviourType.RandomMovement;
         }
@@ -174,12 +145,14 @@ public class Enemy : MonoBehaviour
 
     public virtual void TeleportToJail()
     {
-        m_EnemyDisabled = true;
         var teleportLocation = m_InJail.RandomLocation();
         gameObject.transform.position = teleportLocation;
     }
 
-    public virtual void DisableNavMeshAgent() { m_Agent.enabled = false; }
-
-    public virtual void DisableAnimator() { m_Animator.enabled = false; }
+    public virtual void Disable() 
+    { 
+        m_EnemyDisabled = true;
+        m_Agent.enabled = false; 
+        m_Animator.enabled = false;
+    }
 }
