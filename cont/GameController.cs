@@ -13,8 +13,15 @@ public class GameController : MonoBehaviour
 {
     public static GameController Current { get { return m_Instance; } }
 
+    ///<summary>
+    /// Enemy Controller reference
+    ///</summary>
     public EnemyController EC { get { return m_EnemyController; } }
+    ///<summary>
+    /// Enemy Spawner reference
+    ///</summary>
     public EnemySpawner ES { get { return m_EnemySpawner; } }
+    
     public GameObject Jail { get { return m_MainJail; } }
     public GameObject Player { get { return m_MainPlayer; } }
     public List<Door> Doors { get { return m_Doors; } }
@@ -87,11 +94,11 @@ public class GameController : MonoBehaviour
     IEnumerator SpawnFirstWaveTest()
     {
         yield return new WaitForSeconds(0.5f);
-        m_EnemySpawner.SpawnEnemies(SpawnMethod.InJail, BehaviourType.RandomMovement, 5);
-        m_EnemySpawner.SpawnEnemies(SpawnMethod.Random, BehaviourType.SeekDoors, Doors.Count);
+        ES.SpawnEnemies(SpawnMethod.InJail, EnemyType.Squid, BehaviourType.RandomMovement, numEnemies: 5);
+        ES.SpawnEnemies(SpawnMethod.Random, EnemyType.Squid, BehaviourType.SeekDoors, numEnemies: Doors.Count);
+        ES.SpawnEnemies(SpawnMethod.Random, EnemyType.Starfish, BehaviourType.Starfish, numEnemies: 1);
+        EC.StartEnemyUpdateCycle();
         Score = 0;
-        yield return new WaitForSeconds(1.0f);
-        m_EnemyController.StartEnemyUpdateCycle();
     }
 
     void GameWon()
