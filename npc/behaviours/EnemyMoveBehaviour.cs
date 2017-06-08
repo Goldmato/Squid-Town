@@ -10,12 +10,12 @@ using UnityEngine.AI;
 ///</summary>
 public abstract class EnemyMoveBehaviour
 {
-    protected Enemy m_Enemy;
+    protected BaseEnemy m_Enemy;
     protected Door m_PrevDoor;
 
     protected float m_DoorTriggerDistance;
 
-    public EnemyMoveBehaviour(Enemy enemy, float doorTriggerDistance = 10f)
+    public EnemyMoveBehaviour(BaseEnemy enemy, float doorTriggerDistance = 10f)
     {
         m_Enemy = enemy;
         m_DoorTriggerDistance = doorTriggerDistance;

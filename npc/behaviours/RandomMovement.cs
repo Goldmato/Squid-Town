@@ -17,7 +17,7 @@ public class RandomMovement : EnemyMoveBehaviour
     private float m_DoorDistanceMultiplier;
 
     // Default constructor
-    public RandomMovement(Enemy enemy, float moveDistanceLow = 15f, float moveDistanceHigh = 30f,
+    public RandomMovement(BaseEnemy enemy, float moveDistanceLow = 15f, float moveDistanceHigh = 30f,
         float doorTriggerDistance = 10f, float doorDistanceMultiplier = 2f) : base(enemy, doorTriggerDistance)
     {
         m_DoorDistanceMultiplier = doorDistanceMultiplier;

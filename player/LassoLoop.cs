@@ -9,20 +9,18 @@ public class LassoLoop : MonoBehaviour
     void OnTriggerEnter(Collider other)
     {
         // do this if we have hit an enemy
-        if(other.gameObject.tag == "Enemy")
+        if(other.CompareTag("Enemy"))
         {
-            Enemy enemy = other.GetComponent<Enemy>();
+            BaseEnemy enemy = other.GetComponent<BaseEnemy>();
             
             // if enemy is disabled, return to caller
             if(enemy.Disabled)
                 return;
 
             // the NavMeshAgent needs to be disabled before we can teleport to jail
-            enemy.DisableNavMeshAgent();
-
             // disable the animator. it would be better to use an idle
             //		animation instead in the future.
-            enemy.DisableAnimator();
+            enemy.Disable();
 
             // teleport
             enemy.TeleportToJail();
