@@ -13,7 +13,8 @@ public class EnemySpawner : MonoBehaviour
     // TODO: Implement features shown in https://www.draw.io/#DEnemyManager
 
     [SerializeField] private Terrain m_Terrain;
-    [SerializeField] private List<Enemy> m_SpawnableEnemies;
+    [SerializeField] private SimpleEnemy m_SquidEnemy;
+    [SerializeField] private SuperEnemy m_StarfishEnemy;
 
     private GameObject m_Container;
     private JailFloor m_InJail;
@@ -24,27 +25,27 @@ public class EnemySpawner : MonoBehaviour
         m_InJail = GameObject.FindGameObjectWithTag("InJail").GetComponent<JailFloor>();
     }
 
-    public void SpawnEnemies(SpawnMethod method, BehaviourType ?moveType = null, int numEnemies = 10)
+    public void SpawnEnemies(SpawnMethod method, EnemyType enemyType = EnemyType.Squid, BehaviourType ?moveType = null, int numEnemies = 10)
     {
         switch(method)
         {
             case SpawnMethod.Random:
-                SpawnEnemiesRandom(moveType, numEnemies);
+                SpawnEnemiesRandom(moveType, enemyType, numEnemies);
                 break;
             case SpawnMethod.InHouses:
-                SpawnEnemiesInHouses(moveType);
+                SpawnEnemiesInHouses(moveType, enemyType);
                 break;
             case SpawnMethod.InJail:
-                SpawnEnemiesInJail(moveType, numEnemies);
+                SpawnEnemiesInJail(moveType, enemyType, numEnemies);
                 break;
             default:
                 throw new UnityException("Invalid spawn method requested (EnemyManager)");
         }
     }
 
-    void SpawnEnemiesRandom(BehaviourType ?moveType, int numEnemies)
+    void SpawnEnemiesRandom(BehaviourType? moveType, EnemyType enemyType, int numEnemies)
     {
-        Debug.Log("Spawning [" + numEnemies + "] enemies randomly");
+        Debug.Log("Spawning [" + numEnemies + "] " + enemyType + " randomly");
 
         float terrainRadius = (m_Terrain.terrainData.size.x + m_Terrain.terrainData.size.z) / 2;
 
@@ -55,8 +56,7 @@ public class EnemySpawner : MonoBehaviour
                                             Random.Range(m_Terrain.transform.position.z, m_Terrain.transform.position.z + m_Terrain.terrainData.size.z));
             NavMesh.SamplePosition(randomPos, out hit, terrainRadius, NavMesh.AllAreas);
 
-            var newEnemy = Instantiate(m_SpawnableEnemies[Random.Range(0, m_SpawnableEnemies.Count)],
-                 hit.position, Quaternion.identity) as Enemy;
+            var newEnemy = SpawnEnemy(enemyType, hit.position, Quaternion.identity);
             newEnemy.SetMoveMode(moveType);
             OrganizeEnemy(newEnemy.transform);
 
@@ -64,33 +64,50 @@ public class EnemySpawner : MonoBehaviour
         }
     }
 
-    void SpawnEnemiesInHouses(BehaviourType ?moveType)
+    void SpawnEnemiesInHouses(BehaviourType ?moveType, EnemyType enemyType)
     {
-        Debug.Log("Spawning [" + GameController.Current.Doors.Count + "] enemies in houses");
+        Debug.Log("Spawning [" + GameController.Current.Doors.Count + "] " + enemyType + " in houses");
 
         for(int i = 0; i < GameController.Current.Doors.Count; i++)
         {
-            var newEnemy = Instantiate(m_SpawnableEnemies[Random.Range(0, m_SpawnableEnemies.Count)],
-                 GameController.Current.Doors[i].transform.position, Quaternion.identity) as Enemy;
+            var newEnemy = SpawnEnemy(enemyType, GameController.Current.Doors[i].Edge, Quaternion.identity);
             newEnemy.SetMoveMode(moveType);
             OrganizeEnemy(newEnemy.transform);
         }
     }
 
-    void SpawnEnemiesInJail(BehaviourType ?moveType, int numEnemies)
+    void SpawnEnemiesInJail(BehaviourType ?moveType, EnemyType enemyType, int numEnemies)
     {
-        Debug.Log("Spawning [" + numEnemies + "] enemies in jail");
+        Debug.Log("Spawning [" + numEnemies + "] " + enemyType + " in jail");
 
         for (int i = 0; i < numEnemies; i++)
         {
             //TODO: Spawn enemies in a circular area within the main jail
             Vector3 randomPos = m_InJail.RandomLocation();
 
-            var newEnemy = Instantiate(m_SpawnableEnemies[Random.Range(0, m_SpawnableEnemies.Count)],
-                 randomPos, Quaternion.identity) as Enemy;
+            var newEnemy = SpawnEnemy(enemyType, randomPos, Quaternion.identity);
             newEnemy.SetMoveMode(moveType);
             OrganizeEnemy(newEnemy.transform);
         }
+    }
+
+    BaseEnemy SpawnEnemy(EnemyType type, Vector3 pos, Quaternion rot)
+    {
+        BaseEnemy enemyToSpawn;
+
+        switch(type)
+        {
+            case EnemyType.Squid:
+                enemyToSpawn = m_SquidEnemy;
+                break;
+            case EnemyType.Starfish:
+                enemyToSpawn = m_StarfishEnemy;
+                break;
+            default:
+                goto case EnemyType.Squid;
+        }
+
+        return Instantiate(enemyToSpawn, pos, rot) as BaseEnemy;
     }
 
     void OrganizeEnemy(Transform enemyTF)
