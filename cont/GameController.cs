@@ -22,11 +22,11 @@ public class GameController : MonoBehaviour
     ///</summary>
     public EnemySpawner ES { get { return m_EnemySpawner; } }
     
-    public GameObject Jail { get { return m_MainJail; } }
+    public JailFloor Jail { get { return m_MainJail; } }
     public GameObject Player { get { return m_MainPlayer; } }
     public List<Door> Doors { get { return m_Doors; } }
 
-    [SerializeField] private GameObject m_MainJail;
+    [SerializeField] private JailFloor m_MainJail;
     [SerializeField] private GameObject m_MainPlayer;
 
     private static GameController m_Instance;

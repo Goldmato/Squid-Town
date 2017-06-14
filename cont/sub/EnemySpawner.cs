@@ -17,12 +17,10 @@ public class EnemySpawner : MonoBehaviour
     [SerializeField] private SuperEnemy m_StarfishEnemy;
 
     private GameObject m_Container;
-    private JailFloor m_InJail;
 
     void Start()
     {
         m_Container = new GameObject("Enemies");
-        m_InJail = GameObject.FindGameObjectWithTag("InJail").GetComponent<JailFloor>();
     }
 
     public void SpawnEnemies(SpawnMethod method, EnemyType enemyType = EnemyType.Squid, BehaviourType ?moveType = null, int numEnemies = 10)
@@ -83,7 +81,7 @@ public class EnemySpawner : MonoBehaviour
         for (int i = 0; i < numEnemies; i++)
         {
             //TODO: Spawn enemies in a circular area within the main jail
-            Vector3 randomPos = m_InJail.RandomLocation();
+            Vector3 randomPos = GameController.Current.Jail.RandomLocation();
 
             var newEnemy = SpawnEnemy(enemyType, randomPos, Quaternion.identity);
             newEnemy.SetMoveMode(moveType);

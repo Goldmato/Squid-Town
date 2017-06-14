@@ -5,6 +5,8 @@ public class JailFloor : MonoBehaviour
 {
     public float Radius { get { return m_Radius; } }
 
+    [SerializeField] private GameObject m_JailBase;
+
     private Mesh m_Mesh;
 
     private float m_Radius;
@@ -26,5 +28,12 @@ public class JailFloor : MonoBehaviour
         var randomLocation = new Vector3(randomX, transform.position.y, randomZ);
 
         return randomLocation;
+    }
+
+    public Vector3 Front(float agentOffset = 0f)
+    {
+        var floorCol = m_JailBase.GetComponent<Collider>();
+
+        return m_JailBase.transform.position + (-m_JailBase.transform.up * (floorCol.bounds.extents.y + agentOffset));
     }
 }
