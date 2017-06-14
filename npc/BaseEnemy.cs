@@ -13,28 +13,36 @@ using UnityEngine.AI;
 public class BaseEnemy : MonoBehaviour
 {
     public NavMeshAgent Agent { get { return m_Agent; } }
-    public bool SkipUpdates { get { if(MoveMode != null) 
-        return MoveMode.SkipUpdates & !m_EnemyStopped; else return false; } }
+    public bool SkipUpdates
+    {
+        get
+        {
+            if(MoveMode != null)
+                return MoveMode.SkipUpdates & !m_EnemyStopped & !m_EnemyRunState;
+            else 
+                return false;
+        }
+    }
     public bool Disabled { get { return m_EnemyDisabled; } }
     public bool Stopped { get { return m_EnemyStopped; } }
-    public bool RunState
-    {
-        get { return m_EnemyRunState; }
-        set
-        {
-            m_EnemyRunState = value;
-            if(value)
-            {
-                m_Agent.acceleration = m_RunSpeed * 2;
-                m_Agent.speed = m_RunSpeed;
-            }
-            else
-            {
-                m_Agent.acceleration = m_MoveSpeed * 2;
-                m_Agent.speed = m_MoveSpeed;
-            }
 
-            // Debug.Log("Speed increased by: " + (m_Agent.speed - m_MoveSpeed));
+    public virtual bool GetRunState()
+    {
+        return m_EnemyRunState;
+    }
+
+    public virtual void SetRunState(bool value)
+    {
+        m_EnemyRunState = value;
+        if(value)
+        {
+            m_Agent.acceleration = m_RunSpeed * 2;
+            m_Agent.speed = m_RunSpeed;
+        }
+        else
+        {
+            m_Agent.acceleration = m_MoveSpeed * 2;
+            m_Agent.speed = m_MoveSpeed;
         }
     }
 
@@ -51,8 +59,6 @@ public class BaseEnemy : MonoBehaviour
     protected NavMeshAgent m_Agent;
     protected Animator m_Animator;
     protected Collider m_Collider;
-
-    protected static JailFloor m_InJail;
 
     protected float m_DisableDelay;
     protected float m_MoveSpeed;
@@ -72,21 +78,16 @@ public class BaseEnemy : MonoBehaviour
         m_MoveSpeed = Random.Range(m_SpeedLow, m_SpeedHigh);
         m_RunSpeed = Random.Range(m_RunSpeedLow, m_RunSpeedHigh);
 
-        RunState = false;
-
         GameController.Current.EC.Register(this);
-
-        if(m_InJail == null)
-            m_InJail = GameObject.FindGameObjectWithTag("InJail").GetComponent<JailFloor>();
     }
-    
+
     void Update()
     {
-        if (!m_Agent.pathPending)
+        if(!m_Agent.pathPending && !m_EnemyDisabled)
         {
-            if (m_Agent.remainingDistance <= m_Agent.stoppingDistance)
+            if(m_Agent.remainingDistance <= m_Agent.stoppingDistance)
             {
-                if (!m_Agent.hasPath || m_Agent.velocity.sqrMagnitude == 0f)
+                if(!m_Agent.hasPath || m_Agent.velocity.sqrMagnitude == 0f)
                 {
                     m_EnemyStopped = !m_EnemyRunState;
                 }
@@ -128,7 +129,7 @@ public class BaseEnemy : MonoBehaviour
         // Debug.Log("Enemy move successful: " + moveSuccesful);
     }
 
-    public virtual void GoRightOrLeft(bool ?rightOrLeft = null)
+    public virtual void GoRightOrLeft(bool? rightOrLeft = null)
     {
         if(m_EnemyDisabled)
             return;
@@ -140,7 +141,7 @@ public class BaseEnemy : MonoBehaviour
         MoveMode.GoRightOrLeft((bool)rightOrLeft, Random.Range(m_RunDistanceLow, m_RunDistanceHigh));
     }
 
-    public virtual void SetMoveMode(BehaviourType ?moveType)
+    public virtual void SetMoveMode(BehaviourType? moveType)
     {
         switch(moveType)
         {
@@ -160,14 +161,14 @@ public class BaseEnemy : MonoBehaviour
 
     public virtual void TeleportToJail()
     {
-        var teleportLocation = m_InJail.RandomLocation();
+        var teleportLocation = GameController.Current.Jail.RandomLocation();
         gameObject.transform.position = teleportLocation;
     }
 
-    public virtual void Disable() 
-    { 
-        m_EnemyDisabled = true;
-        m_Agent.enabled = false; 
-        m_Animator.enabled = false;
+    public virtual void Enabled(bool state)
+    {
+        m_EnemyDisabled = !state;
+        m_Agent.enabled = state;
+        m_Animator.enabled = state;
     }
 }

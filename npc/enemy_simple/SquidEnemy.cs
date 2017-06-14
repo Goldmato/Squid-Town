@@ -9,4 +9,9 @@ using UnityEngine;
 public class SquidEnemy : SimpleEnemy 
 {
 	// TODO: Implement squid-only behaviours
+
+	void Start()
+	{
+        SetRunState(false);
+    }
 }

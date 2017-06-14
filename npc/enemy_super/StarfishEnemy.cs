@@ -5,14 +5,13 @@ using UnityEngine;
 
 public class StarfishEnemy : SuperEnemy 
 {
-	// TODO: Zigzag running behaviour
+    // TODO: Zigzag running behaviour
     // TODO: Breaking enemies out of jail periodically
-
     void Start()
     {
         m_MoveSpeed = 10;
         m_RunSpeed = 20;
-        RunState = false;
+        SetRunState(false);
     }
 
     protected override void MoveInitialize()
