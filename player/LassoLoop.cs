@@ -17,13 +17,8 @@ public class LassoLoop : MonoBehaviour
             if(enemy.Disabled)
                 return;
 
-            // the NavMeshAgent needs to be disabled before we can teleport to jail
-            // disable the animator. it would be better to use an idle
-            //		animation instead in the future.
-            enemy.Disable();
-
-            // teleport
-            enemy.TeleportToJail();
+            // use the main EnemyController to handle the jailing sequence
+            GameController.Current.EC.SendEnemyToJail(enemy);
 
             // play a sound
             gameObject.GetComponent<AudioSource>().Play();

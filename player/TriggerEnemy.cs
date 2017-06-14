@@ -10,8 +10,8 @@ public class TriggerEnemy : MonoBehaviour
         if(other.CompareTag("Enemy"))
         {
             var enemy = other.GetComponent<BaseEnemy>();
-            if(!enemy.RunState)
-                enemy.RunState = true;
+            if(!enemy.GetRunState())
+                enemy.SetRunState(true);
         }
     }
 
@@ -20,7 +20,7 @@ public class TriggerEnemy : MonoBehaviour
         if(other.CompareTag("Enemy"))
         {
             var enemy = other.GetComponent<BaseEnemy>();
-            enemy.RunState = false;
+            enemy.SetRunState(false);
         }
     }
 }
