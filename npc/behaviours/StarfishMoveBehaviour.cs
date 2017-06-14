@@ -39,6 +39,7 @@ public class StarfishMoveBehaviour : EnemyMoveBehaviour
             
             if(m_TimerFlag)
             {
+                m_Enemy.Animator.SetTrigger("starfish_smash");
                 m_TimerFlag = false;
                 m_BreakoutTimer = Time.timeSinceLevelLoad + BREAKOUT_INTERVAL;
             }
@@ -46,6 +47,7 @@ public class StarfishMoveBehaviour : EnemyMoveBehaviour
             if(Time.timeSinceLevelLoad > m_BreakoutTimer)
             {
                 ReleaseEnemy();
+                m_Enemy.Animator.SetTrigger("starfish_spin");
                 m_SkipUpdates = false;
                 m_BreakoutState = false;
                 return true;
@@ -120,6 +122,7 @@ public class StarfishMoveBehaviour : EnemyMoveBehaviour
     {
         var jail = GameController.Current.Jail;
 
+        m_Enemy.Animator.SetTrigger("starfish_walk");
         m_SkipUpdates = true;
         m_TimerFlag = true;
         m_BreakoutState = true;

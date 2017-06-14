@@ -13,6 +13,7 @@ using UnityEngine.AI;
 public class BaseEnemy : MonoBehaviour
 {
     public NavMeshAgent Agent { get { return m_Agent; } }
+    public Animator Animator { get { return m_Animator; } }
     public bool SkipUpdates
     {
         get
