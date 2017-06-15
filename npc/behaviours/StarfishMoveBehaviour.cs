@@ -16,7 +16,7 @@ public class StarfishMoveBehaviour : EnemyMoveBehaviour
     private bool m_TurnState;
     private bool m_BreakoutState;
     private bool m_TimerFlag;
-
+    
     const float BREAKOUT_INTERVAL = 3f;
 
     public StarfishMoveBehaviour(BaseEnemy enemy, float jailBreakChance = 0.25f, 
@@ -39,6 +39,7 @@ public class StarfishMoveBehaviour : EnemyMoveBehaviour
             
             if(m_TimerFlag)
             {
+                m_Enemy.transform.LookAt(GameController.Current.Jail.transform.position);
                 m_Enemy.Animator.SetTrigger("starfish_smash");
                 m_TimerFlag = false;
                 m_BreakoutTimer = Time.timeSinceLevelLoad + BREAKOUT_INTERVAL;
