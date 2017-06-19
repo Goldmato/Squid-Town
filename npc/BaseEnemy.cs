@@ -20,12 +20,32 @@ public class BaseEnemy : MonoBehaviour
         {
             if(MoveMode != null)
                 return MoveMode.SkipUpdates & !m_EnemyStopped & !m_EnemyRunState;
-            else 
+            else
                 return false;
         }
     }
     public bool Disabled { get { return m_EnemyDisabled; } }
     public bool Stopped { get { return m_EnemyStopped; } }
+
+    public float MoveSpeed
+    {
+        get
+        {
+            if(m_MoveSpeed == 0)
+                m_MoveSpeed = Random.Range(m_SpeedLow, m_SpeedHigh);
+            return m_MoveSpeed;
+        }
+    }
+
+    public float RunSpeed
+    {
+        get
+        {
+            if(m_RunSpeed == 0)
+                m_RunSpeed = Random.Range(m_RunSpeedLow, m_RunSpeedHigh);
+            return m_RunSpeed;
+        }
+    }
 
     public virtual bool GetRunState()
     {
@@ -37,24 +57,34 @@ public class BaseEnemy : MonoBehaviour
         m_EnemyRunState = value;
         if(value)
         {
-            m_Agent.acceleration = m_RunSpeed * 2;
-            m_Agent.speed = m_RunSpeed;
+            m_Agent.acceleration = RunSpeed * 2;
+            m_Agent.speed = RunSpeed;
         }
         else
         {
-            m_Agent.acceleration = m_MoveSpeed * 2;
-            m_Agent.speed = m_MoveSpeed;
+            m_Agent.acceleration = MoveSpeed * 2;
+            m_Agent.speed = MoveSpeed;
         }
     }
 
-    [SerializeField] [Range(0, 10f)] protected float m_SpeedLow = 3f;
-    [SerializeField] [Range(0, 10f)] protected float m_SpeedHigh = 5f;
-    [SerializeField] [Range(10f, 20f)] protected float m_RunSpeedLow = 15f;
-    [SerializeField] [Range(10f, 20f)] protected float m_RunSpeedHigh = 18f;
-    [SerializeField] [Range(10f, 20f)] protected float m_RunDistanceLow = 10f;
-    [SerializeField] [Range(10f, 20f)] protected float m_RunDistanceHigh = 20f;
+    protected virtual EnemyMoveBehaviour MoveMode
+    {
+        get
+        {
+            if(m_MoveMode == null)
+                m_MoveMode = new RandomMovement(this);
+            return m_MoveMode;
+        }
+    }
 
-    protected EnemyMoveBehaviour MoveMode;
+    [SerializeField] [Range(0, 100f)] protected float m_SpeedLow = 3f;
+    [SerializeField] [Range(0, 100f)] protected float m_SpeedHigh = 5f;
+    [SerializeField] [Range(10f, 100f)] protected float m_RunDistanceLow = 10f;
+    [SerializeField] [Range(10f, 100f)] protected float m_RunDistanceHigh = 20f;
+    [SerializeField] [Range(10f, 200f)] protected float m_RunSpeedLow = 15f;
+    [SerializeField] [Range(10f, 200f)] protected float m_RunSpeedHigh = 18f;
+
+    protected EnemyMoveBehaviour m_MoveMode;
 
     protected Renderer[] m_Renderer;
     protected NavMeshAgent m_Agent;
@@ -76,9 +106,6 @@ public class BaseEnemy : MonoBehaviour
         m_Collider = GetComponent<Collider>();
         m_Renderer = GetComponentsInChildren<Renderer>();
 
-        m_MoveSpeed = Random.Range(m_SpeedLow, m_SpeedHigh);
-        m_RunSpeed = Random.Range(m_RunSpeedLow, m_RunSpeedHigh);
-
         GameController.Current.EC.Register(this);
     }
 
@@ -94,25 +121,13 @@ public class BaseEnemy : MonoBehaviour
                 }
             }
         }
-        else
-        {
-            m_EnemyStopped = false;
-        }
-    }
-
-    protected virtual void MoveInitialize()
-    {
-        if(MoveMode == null)
-            MoveMode = new RandomMovement(this);
-
-        m_Agent.isStopped = false;
     }
 
     public virtual void RunFromPlayer()
     {
         if(m_EnemyDisabled)
             return;
-        MoveInitialize();
+        m_Agent.isStopped = false;
 
         if(!m_EnemyStopped)
             MoveMode.RunFromPlayer(Random.Range(m_RunDistanceLow, m_RunDistanceHigh));
@@ -124,7 +139,7 @@ public class BaseEnemy : MonoBehaviour
     {
         if(m_EnemyDisabled)
             return;
-        MoveInitialize();
+        m_Agent.isStopped = false;
 
         bool moveSuccesful = MoveMode.MoveNext();
         // Debug.Log("Enemy move successful: " + moveSuccesful);
@@ -134,7 +149,7 @@ public class BaseEnemy : MonoBehaviour
     {
         if(m_EnemyDisabled)
             return;
-        MoveInitialize();
+        m_Agent.isStopped = false;
 
         if(rightOrLeft == null)
             rightOrLeft = Random.value > 0.5 ? true : false;
@@ -147,13 +162,10 @@ public class BaseEnemy : MonoBehaviour
         switch(moveType)
         {
             case BehaviourType.RandomMovement:
-                MoveMode = new RandomMovement(this);
+                m_MoveMode = new RandomMovement(this);
                 break;
             case BehaviourType.SeekDoors:
-                MoveMode = new SeekDoors(this);
-                break;
-            case BehaviourType.Starfish:
-                MoveMode = new StarfishMoveBehaviour(this);
+                m_MoveMode = new SeekDoors(this);
                 break;
             default:
                 goto case BehaviourType.RandomMovement;
@@ -168,8 +180,10 @@ public class BaseEnemy : MonoBehaviour
 
     public virtual void Enabled(bool state)
     {
-        m_EnemyDisabled = !state;
+        SetEnemyDisabled(!state);
         m_Agent.enabled = state;
         m_Animator.enabled = state;
     }
+
+    protected virtual void SetEnemyDisabled(bool state) { m_EnemyDisabled = state; }
 }

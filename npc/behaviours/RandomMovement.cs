@@ -16,10 +16,13 @@ public class RandomMovement : EnemyMoveBehaviour
     private float m_MoveDistance;
     private float m_DoorDistanceMultiplier;
 
+    private BaseEnemy m_Enemy;
+
     // Default constructor
     public RandomMovement(BaseEnemy enemy, float moveDistanceLow = 15f, float moveDistanceHigh = 30f,
         float doorTriggerDistance = 10f, float doorDistanceMultiplier = 2f) : base(enemy, doorTriggerDistance)
     {
+        m_Enemy = enemy;
         m_DoorDistanceMultiplier = doorDistanceMultiplier;
         m_MoveDistance = Random.Range(moveDistanceLow, moveDistanceHigh);
     }

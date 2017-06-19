@@ -15,8 +15,11 @@ public class SeekDoors : EnemyMoveBehaviour
     private int[] m_DoorsToIgnore = { -1, -1 };
     private int m_DoorIgnoreIndex;
 
+    private BaseEnemy m_Enemy;
+
     public SeekDoors(BaseEnemy enemy) : base (enemy) 
     {
+        m_Enemy = enemy;
     }
 
     public override bool MoveNext()

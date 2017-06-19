@@ -10,9 +10,9 @@ using UnityEngine.UI;
 public class EnemyController : MonoBehaviour
 {
     public static EnemyController Current { get { return m_Instance; } }
-    
+
     public bool UpdateRunning { get { return m_UpdateEnemies; } set { m_UpdateEnemies = value; } }
-    public int EnemyCount { get { return m_Enemies.Count; }  }
+    public int EnemyCount { get { return m_Enemies.Count; } }
 
     private List<BaseEnemy> m_Enemies = new List<BaseEnemy>();
     private List<BaseEnemy> m_JailEnemies = new List<BaseEnemy>();
@@ -24,7 +24,16 @@ public class EnemyController : MonoBehaviour
     private int m_IntervalFrames = 30;
 
     const byte MAX_SKIPPED_UPDATES = 25;
-    
+
+    // DEBUGGING/TESTING
+    void Update()
+    {
+        if(Input.GetKeyDown(KeyCode.Tab))
+        {
+            SendEnemyToJail(m_Enemies.Find(x => x.GetType() == typeof(StarfishEnemy)));
+        }
+    }
+
     public void StartEnemyUpdateCycle()
     {
         StartCoroutine(UpdateEnemies());
@@ -42,6 +51,17 @@ public class EnemyController : MonoBehaviour
 
         enemy.Enabled(false);
         enemy.TeleportToJail();
+    }
+
+    public void ReleaseEnemy(BaseEnemy enemy)
+    {
+        if(m_JailEnemies.Count <= 0)
+
+            throw new UnityException("No enemies to release from jail");
+        m_JailEnemies.Find(x => x.Equals(enemy)).Enabled(true);
+        m_JailEnemies.Remove(enemy);
+
+        GameController.Current.Score--;
     }
 
     public void ReleaseRandomEnemy()
@@ -82,7 +102,7 @@ public class EnemyController : MonoBehaviour
         m_UpdateEnemies = true;
         while(m_UpdateEnemies)
         {
-            for (int i = 0; i < EnemyCount; i++)
+            for(int i = 0; i < EnemyCount; i++)
             {
                 MoveEnemy(i);
 

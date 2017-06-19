@@ -12,11 +12,12 @@ public abstract class EnemyMoveBehaviour
 {
     public bool SkipUpdates { get { return m_SkipUpdates; } }
 
-    protected BaseEnemy m_Enemy;
     protected Door m_PrevDoor;
 
     protected float m_DoorTriggerDistance;
     protected bool m_SkipUpdates;
+
+    private BaseEnemy m_Enemy;
 
     public EnemyMoveBehaviour(BaseEnemy enemy, float doorTriggerDistance = 10f)
     {
@@ -24,12 +25,14 @@ public abstract class EnemyMoveBehaviour
         m_DoorTriggerDistance = doorTriggerDistance;
     }
 
+    protected virtual BaseEnemy GetEnemy() { return m_Enemy; }
+
     public abstract bool MoveNext();
 
     public virtual void RunFromPlayer(float distance = 25f)
     {
         var player = GameController.Current.Player;
-        
+
         // TODO: Add slight variation to direction;
         Vector3 direction = (m_Enemy.transform.position - player.transform.position).normalized;
         direction.x += Random.Range(-0.2f, 0.2f);

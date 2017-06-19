@@ -96,7 +96,7 @@ public class GameController : MonoBehaviour
         yield return new WaitForSeconds(0.5f);
         ES.SpawnEnemies(SpawnMethod.InJail, EnemyType.Squid, BehaviourType.RandomMovement, numEnemies: 5);
         ES.SpawnEnemies(SpawnMethod.Random, EnemyType.Squid, BehaviourType.SeekDoors, numEnemies: Doors.Count);
-        ES.SpawnEnemies(SpawnMethod.Random, EnemyType.Starfish, BehaviourType.Starfish, numEnemies: 1);
+        ES.SpawnEnemies(SpawnMethod.Random, EnemyType.Starfish, numEnemies: 1);
         EC.StartEnemyUpdateCycle();
         Score = 0;
     }

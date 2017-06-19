@@ -8,20 +8,26 @@ public class StarfishMoveBehaviour : EnemyMoveBehaviour
 {
     public bool BreakoutState { get { return m_BreakoutState; } }
 
+    private StarfishEnemy m_Enemy;
+
     private Terrain m_Terrain;
 
-    private float m_JailBreakChance;
+    private float m_JailBreakChance = BASE_BREAKOUT_CHANCE;
     private float m_CornerExtent;
     private float m_BreakoutTimer;
     private bool m_TurnState;
     private bool m_BreakoutState;
     private bool m_TimerFlag;
-    
-    const float BREAKOUT_INTERVAL = 3f;
 
-    public StarfishMoveBehaviour(BaseEnemy enemy, float jailBreakChance = 0.25f, 
+    const float BREAKOUT_INTERVAL = 3f;
+    const float ENTROPY_INTERVAL = 0.05f;
+    const float BASE_BREAKOUT_CHANCE = 0.25f;
+    const float MAX_BREAKOUT_CHANCE = 0.75f;
+
+    public StarfishMoveBehaviour(StarfishEnemy enemy, float jailBreakChance = 0.25f,
         float cornerExtent = 50f) : base(enemy)
     {
+        m_Enemy = enemy;
         m_Terrain = Terrain.activeTerrain;
         m_JailBreakChance = jailBreakChance;
         m_CornerExtent = cornerExtent;
@@ -36,7 +42,7 @@ public class StarfishMoveBehaviour : EnemyMoveBehaviour
             m_Enemy.Agent.destination = jailFront;
             if(Vector3.Distance(m_Enemy.transform.position, jailFront) > m_Enemy.Agent.radius * 5)
                 return false;
-            
+
             if(m_TimerFlag)
             {
                 m_Enemy.transform.LookAt(GameController.Current.Jail.transform.position);
@@ -48,9 +54,7 @@ public class StarfishMoveBehaviour : EnemyMoveBehaviour
             if(Time.timeSinceLevelLoad > m_BreakoutTimer)
             {
                 ReleaseEnemy();
-                m_Enemy.Animator.SetTrigger("starfish_spin");
-                m_SkipUpdates = false;
-                m_BreakoutState = false;
+
                 return true;
             }
 
@@ -62,24 +66,21 @@ public class StarfishMoveBehaviour : EnemyMoveBehaviour
             BreakEnemyOut();
             return false;
         }
+        else if(m_JailBreakChance < MAX_BREAKOUT_CHANCE && GameController.Current.Score > 0)
+        {
+            m_JailBreakChance += ENTROPY_INTERVAL;
+        }
 
         Debug.Log("Starfish going to random map corner");
         GoToRandomCorner();
         return false;
     }
 
-    public override void RunFromPlayer(float distance = 10)
+    public override void RunFromPlayer(float distance = 25)
     {
-        var player = GameController.Current.Player;
-        // m_TurnState = !m_TurnState;
-        // float zigZagAngle = 45 * (m_TurnState ? 1 : -1);
+        EndBreakout();
 
-        //FIXME: Only zigzag when not close to a wall or obstacle
-        Vector3 direction = (m_Enemy.transform.position - player.transform.position).normalized;
-        // direction = Quaternion.Euler(0, zigZagAngle, 0) * direction;
-        Vector3 targetPos = m_Enemy.transform.position + (direction * distance);
-
-        m_Enemy.Agent.destination = targetPos;
+        base.RunFromPlayer();
     }
 
     protected void GoToRandomCorner()
@@ -124,6 +125,7 @@ public class StarfishMoveBehaviour : EnemyMoveBehaviour
         var jail = GameController.Current.Jail;
 
         m_Enemy.Animator.SetTrigger("starfish_walk");
+        m_Enemy.Agent.speed = m_Enemy.WalkSpeed;
         m_SkipUpdates = true;
         m_TimerFlag = true;
         m_BreakoutState = true;
@@ -132,5 +134,14 @@ public class StarfishMoveBehaviour : EnemyMoveBehaviour
     protected void ReleaseEnemy()
     {
         GameController.Current.EC.ReleaseRandomEnemy();
+    }
+
+    protected void EndBreakout()
+    {
+        m_JailBreakChance = BASE_BREAKOUT_CHANCE;
+        m_Enemy.Animator.SetTrigger("starfish_spin");
+        m_Enemy.Agent.speed = m_Enemy.MoveSpeed;
+        m_SkipUpdates = false;
+        m_BreakoutState = false;
     }
 }
