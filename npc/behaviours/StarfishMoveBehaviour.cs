@@ -6,9 +6,11 @@ using UnityEngine.AI;
 
 public class StarfishMoveBehaviour : EnemyMoveBehaviour
 {
-    public bool BreakoutState { get { return m_BreakoutState; } }
+    protected override BaseEnemy Enemy { get { return m_StarEnemy; } set { m_StarEnemy = (StarfishEnemy)value; } }
 
-    private StarfishEnemy m_Enemy;
+    protected StarfishEnemy m_StarEnemy;
+
+    public bool BreakoutState { get { return m_BreakoutState; } }
 
     private Terrain m_Terrain;
 
@@ -27,7 +29,7 @@ public class StarfishMoveBehaviour : EnemyMoveBehaviour
     public StarfishMoveBehaviour(StarfishEnemy enemy, float jailBreakChance = 0.25f,
         float cornerExtent = 50f) : base(enemy)
     {
-        m_Enemy = enemy;
+        Enemy = enemy;
         m_Terrain = Terrain.activeTerrain;
         m_JailBreakChance = jailBreakChance;
         m_CornerExtent = cornerExtent;
@@ -37,16 +39,16 @@ public class StarfishMoveBehaviour : EnemyMoveBehaviour
     {
         if(m_BreakoutState)
         {
-            Vector3 jailFront = GameController.Current.Jail.Front(m_Enemy.Agent.radius);
+            Vector3 jailFront = GameController.Current.Jail.Front(Enemy.Agent.radius);
 
-            m_Enemy.Agent.destination = jailFront;
-            if(Vector3.Distance(m_Enemy.transform.position, jailFront) > m_Enemy.Agent.radius * 5)
+            Enemy.Agent.destination = jailFront;
+            if(Vector3.Distance(Enemy.transform.position, jailFront) > Enemy.Agent.radius * 5)
                 return false;
 
             if(m_TimerFlag)
             {
-                m_Enemy.transform.LookAt(GameController.Current.Jail.transform.position);
-                m_Enemy.Animator.SetTrigger("starfish_smash");
+                Enemy.transform.LookAt(GameController.Current.Jail.transform.position);
+                Enemy.Animator.SetBool("starfish_smash", true);
                 m_TimerFlag = false;
                 m_BreakoutTimer = Time.timeSinceLevelLoad + BREAKOUT_INTERVAL;
             }
@@ -54,19 +56,21 @@ public class StarfishMoveBehaviour : EnemyMoveBehaviour
             if(Time.timeSinceLevelLoad > m_BreakoutTimer)
             {
                 ReleaseEnemy();
+                EndBreakout();
 
                 return true;
             }
 
             return false;
         }
-        if(Random.value < m_JailBreakChance && GameController.Current.Score > 0)
+        if(Random.value < m_JailBreakChance && GameController.Current.JailOccupied)
         {
             Debug.Log("Starfish going to break an enemy out of jail");
             BreakEnemyOut();
+
             return false;
         }
-        else if(m_JailBreakChance < MAX_BREAKOUT_CHANCE && GameController.Current.Score > 0)
+        else if(m_JailBreakChance < MAX_BREAKOUT_CHANCE && GameController.Current.JailOccupied)
         {
             m_JailBreakChance += ENTROPY_INTERVAL;
         }
@@ -117,18 +121,20 @@ public class StarfishMoveBehaviour : EnemyMoveBehaviour
         NavMesh.SamplePosition(new Vector3(posX, 0, posZ), out hit,
             m_Terrain.terrainData.size.x, NavMesh.AllAreas);
 
-        m_Enemy.Agent.destination = hit.position;
+        Enemy.Agent.destination = hit.position;
     }
 
     protected void BreakEnemyOut()
     {
         var jail = GameController.Current.Jail;
 
-        m_Enemy.Animator.SetTrigger("starfish_walk");
-        m_Enemy.Agent.speed = m_Enemy.WalkSpeed;
-        m_SkipUpdates = true;
+        Enemy.Animator.SetBool("starfish_smash", false);
+        Enemy.Animator.SetTrigger("starfish_walk");
+        Enemy.Agent.speed = m_StarEnemy.WalkSpeed;
         m_TimerFlag = true;
         m_BreakoutState = true;
+
+        AlertBuilder.StarfishBreakoutAlert();
     }
 
     protected void ReleaseEnemy()
@@ -138,10 +144,10 @@ public class StarfishMoveBehaviour : EnemyMoveBehaviour
 
     protected void EndBreakout()
     {
+        Enemy.Animator.SetBool("starfish_smash", false);
+        Enemy.Animator.SetTrigger("starfish_spin");
         m_JailBreakChance = BASE_BREAKOUT_CHANCE;
-        m_Enemy.Animator.SetTrigger("starfish_spin");
-        m_Enemy.Agent.speed = m_Enemy.MoveSpeed;
-        m_SkipUpdates = false;
+        Enemy.Agent.speed = Enemy.MoveSpeed;
         m_BreakoutState = false;
     }
 }

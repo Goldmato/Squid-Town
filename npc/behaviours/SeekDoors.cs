@@ -15,11 +15,9 @@ public class SeekDoors : EnemyMoveBehaviour
     private int[] m_DoorsToIgnore = { -1, -1 };
     private int m_DoorIgnoreIndex;
 
-    private BaseEnemy m_Enemy;
-
-    public SeekDoors(BaseEnemy enemy) : base (enemy) 
+    public SeekDoors(BaseEnemy enemy) : base(enemy)
     {
-        m_Enemy = enemy;
+        Enemy = enemy;
     }
 
     public override bool MoveNext()
@@ -34,7 +32,7 @@ public class SeekDoors : EnemyMoveBehaviour
             if(IsDoorIgnored(i))
                 continue;
 
-            float dist = Vector3.Distance(m_Enemy.transform.position, doors[i].transform.position);
+            float dist = Vector3.Distance(Enemy.transform.position, doors[i].transform.position);
 
             if(dist < minDist)
             {
@@ -48,7 +46,7 @@ public class SeekDoors : EnemyMoveBehaviour
             m_DoorIgnoreIndex = 0;
 
         if(selectedDoor >= 0)
-            m_Enemy.Agent.destination = doors[selectedDoor].Edge;
+            Enemy.Agent.destination = doors[selectedDoor].Edge;
         else
             return false;
         return true;

@@ -12,7 +12,7 @@ public class LassoLoop : MonoBehaviour
         if(other.CompareTag("Enemy"))
         {
             BaseEnemy enemy = other.GetComponent<BaseEnemy>();
-            
+
             // if enemy is disabled, return to caller
             if(enemy.Disabled)
                 return;
@@ -31,7 +31,7 @@ public class LassoLoop : MonoBehaviour
             gameObject.transform.parent.gameObject.GetComponent<Lasso>().Carry();
 
             // add to score
-            GameController.Current.Score++;
+            GameController.Current.UpdateScore();
         }
     }
 }

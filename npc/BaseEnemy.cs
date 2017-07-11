@@ -12,6 +12,28 @@ using UnityEngine.AI;
 [RequireComponent(typeof(Collider))]
 public class BaseEnemy : MonoBehaviour
 {
+    [SerializeField] [Range(0, 100f)] protected float m_SpeedLow = 3f;
+    [SerializeField] [Range(0, 100f)] protected float m_SpeedHigh = 5f;
+    [SerializeField] [Range(10f, 100f)] protected float m_RunDistanceLow = 10f;
+    [SerializeField] [Range(10f, 100f)] protected float m_RunDistanceHigh = 20f;
+    [SerializeField] [Range(10f, 200f)] protected float m_RunSpeedLow = 15f;
+    [SerializeField] [Range(10f, 200f)] protected float m_RunSpeedHigh = 18f;
+
+    protected EnemyMoveBehaviour m_MoveMode;
+
+    protected Renderer[] m_Renderer;
+    protected NavMeshAgent m_Agent;
+    protected Animator m_Animator;
+    protected Collider m_Collider;
+
+    protected float m_DisableDelay;
+    protected float m_MoveSpeed;
+    protected float m_RunSpeed;
+    protected bool m_EnemyStopped;
+    protected bool m_EnemyDisabled;
+    protected bool m_EnemyRunState;
+    protected int m_DoorIgnoreIndex;
+
     public NavMeshAgent Agent { get { return m_Agent; } }
     public Animator Animator { get { return m_Animator; } }
     public bool SkipUpdates
@@ -56,15 +78,9 @@ public class BaseEnemy : MonoBehaviour
     {
         m_EnemyRunState = value;
         if(value)
-        {
-            m_Agent.acceleration = RunSpeed * 2;
             m_Agent.speed = RunSpeed;
-        }
         else
-        {
-            m_Agent.acceleration = MoveSpeed * 2;
             m_Agent.speed = MoveSpeed;
-        }
     }
 
     protected virtual EnemyMoveBehaviour MoveMode
@@ -76,28 +92,6 @@ public class BaseEnemy : MonoBehaviour
             return m_MoveMode;
         }
     }
-
-    [SerializeField] [Range(0, 100f)] protected float m_SpeedLow = 3f;
-    [SerializeField] [Range(0, 100f)] protected float m_SpeedHigh = 5f;
-    [SerializeField] [Range(10f, 100f)] protected float m_RunDistanceLow = 10f;
-    [SerializeField] [Range(10f, 100f)] protected float m_RunDistanceHigh = 20f;
-    [SerializeField] [Range(10f, 200f)] protected float m_RunSpeedLow = 15f;
-    [SerializeField] [Range(10f, 200f)] protected float m_RunSpeedHigh = 18f;
-
-    protected EnemyMoveBehaviour m_MoveMode;
-
-    protected Renderer[] m_Renderer;
-    protected NavMeshAgent m_Agent;
-    protected Animator m_Animator;
-    protected Collider m_Collider;
-
-    protected float m_DisableDelay;
-    protected float m_MoveSpeed;
-    protected float m_RunSpeed;
-    protected bool m_EnemyStopped;
-    protected bool m_EnemyDisabled;
-    protected bool m_EnemyRunState;
-    protected int m_DoorIgnoreIndex;
 
     void Awake()
     {
@@ -141,8 +135,7 @@ public class BaseEnemy : MonoBehaviour
             return;
         m_Agent.isStopped = false;
 
-        bool moveSuccesful = MoveMode.MoveNext();
-        // Debug.Log("Enemy move successful: " + moveSuccesful);
+        MoveMode.MoveNext();
     }
 
     public virtual void GoRightOrLeft(bool? rightOrLeft = null)

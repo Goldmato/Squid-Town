@@ -21,10 +21,16 @@ public class GameController : MonoBehaviour
     /// Enemy Spawner reference
     ///</summary>
     public EnemySpawner ES { get { return m_EnemySpawner; } }
-    
+    ///<summary>
+    /// Text Controller reference
+    ///</summary>
+    public TextController TC { get { return m_TextController; } }
+
     public JailFloor Jail { get { return m_MainJail; } }
     public GameObject Player { get { return m_MainPlayer; } }
     public List<Door> Doors { get { return m_Doors; } }
+
+    public bool JailOccupied { get { return m_EnemyController.JailEnemyCount > 0; } }
 
     [SerializeField] private JailFloor m_MainJail;
     [SerializeField] private GameObject m_MainPlayer;
@@ -37,20 +43,12 @@ public class GameController : MonoBehaviour
     private EnemySpawner m_EnemySpawner;
     private TextController m_TextController;
 
-    private int m_Score;
-    public int Score
+    public void UpdateScore()
     {
-        get { return m_Score; }
-        set
-        {
-            m_Score = value;
-            m_TextController.UpdateScore(value, m_EnemyController.EnemyCount - value);
-            if(m_Score >= m_EnemyController.EnemyCount &&
-                m_Score > 0)
-            {
-                GameWon();
-            }
-        }
+        m_TextController.UpdateScore(m_EnemyController.JailEnemyCount, m_EnemyController.FreeEnemyCount);
+
+        if(m_EnemyController.FreeEnemyCount <= 0)
+            GameWon();
     }
 
     void Awake()
@@ -79,6 +77,9 @@ public class GameController : MonoBehaviour
         m_EnemySpawner = GetComponent<EnemySpawner>();
         m_TextController = GetComponent<TextController>();
 
+        // Initialize the IconRegistry since it's a static class that doesn't inherit from MonoBehaviour
+        IconRegistry.LoadIcons();
+
         // Find all doors in scene and add to list
         foreach(Door d in FindObjectsOfType(typeof(Door)))
         {
@@ -98,13 +99,14 @@ public class GameController : MonoBehaviour
         ES.SpawnEnemies(SpawnMethod.Random, EnemyType.Squid, BehaviourType.SeekDoors, numEnemies: Doors.Count);
         ES.SpawnEnemies(SpawnMethod.Random, EnemyType.Starfish, numEnemies: 1);
         EC.StartEnemyUpdateCycle();
-        Score = 0;
+        UpdateScore();
     }
 
     void GameWon()
     {
         // TODO: Load game winning scene
 
+        AlertBuilder.GameWonAlert();
         Debug.LogWarning("All enemies captured! You win!");
     }
 }

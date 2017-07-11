@@ -17,14 +17,14 @@ public class StarfishEnemy : SuperEnemy
         }
     }
 
-    [SerializeField] protected float m_WalkSpeedLow = 5f;
-    [SerializeField] protected float m_WalkSpeedHigh = 10f;
+    [SerializeField] [Range(1, 100)] protected float m_WalkSpeedLow = 5f;
+    [SerializeField] [Range(1, 100)] protected float m_WalkSpeedHigh = 10f;
 
     protected float m_WalkSpeed;
     protected float m_BreakoutTimer;
     protected bool m_BreakoutFlag;
 
-    const float BREAKOUT_DELAY = 20f;
+    const int BREAKOUT_DELAY = 20;
 
     void Start()
     {
@@ -46,17 +46,24 @@ public class StarfishEnemy : SuperEnemy
 
     public override void Enabled(bool state)
     {
-        m_EnemyDisabled = !state;
+        SetEnemyDisabled(!state);
 
         m_Agent.isStopped = state;
         if(state)
+        {
+            m_Animator.SetBool("starfish_smash", false);
             m_Animator.SetTrigger("starfish_spin");
+        }
         else
-            m_Animator.SetTrigger("starfish_smash");
+        {
+            m_Animator.SetBool("starfish_smash", true);
+        }
     }
 
     public override void TeleportToJail()
     {
+        AlertBuilder.StarfishEscapeWarningAlert(BREAKOUT_DELAY);
+
         m_Agent.Warp(GameController.Current.Jail.RandomLocation());
         m_BreakoutFlag = true;
         m_BreakoutTimer = Time.timeSinceLevelLoad + BREAKOUT_DELAY;

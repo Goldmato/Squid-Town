@@ -16,22 +16,20 @@ public class RandomMovement : EnemyMoveBehaviour
     private float m_MoveDistance;
     private float m_DoorDistanceMultiplier;
 
-    private BaseEnemy m_Enemy;
-
     // Default constructor
     public RandomMovement(BaseEnemy enemy, float moveDistanceLow = 15f, float moveDistanceHigh = 30f,
         float doorTriggerDistance = 10f, float doorDistanceMultiplier = 2f) : base(enemy, doorTriggerDistance)
     {
-        m_Enemy = enemy;
+        Enemy = enemy;
         m_DoorDistanceMultiplier = doorDistanceMultiplier;
         m_MoveDistance = Random.Range(moveDistanceLow, moveDistanceHigh);
     }
 
     public override bool MoveNext()
     {
-        m_Enemy.transform.Rotate(m_Enemy.transform.up, Random.Range(0, 360));
-        Vector3 targetPos = m_Enemy.transform.position + 
-            (m_Enemy.transform.forward * m_MoveDistance * (m_PrevDoor != null ? m_DoorDistanceMultiplier : 1));
+        Enemy.transform.Rotate(Enemy.transform.up, Random.Range(0, 360));
+        Vector3 targetPos = Enemy.transform.position +
+            (Enemy.transform.forward * m_MoveDistance * (m_PrevDoor != null ? m_DoorDistanceMultiplier : 1));
 
         if(m_PrevDoor != null)
             m_PrevDoor.Leave();
@@ -40,7 +38,7 @@ public class RandomMovement : EnemyMoveBehaviour
         if(CheckForDoor(targetPos, m_DoorTriggerDistance))
             return false;
 
-        m_Enemy.Agent.destination = targetPos;
+        Enemy.Agent.destination = targetPos;
         return true;
     }
 }
